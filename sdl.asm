@@ -1,7 +1,9 @@
 %ifndef SDL_ASM
 %define SDL_ASM
 
-extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_PollEvent
+extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow
+extern SDL_CreateRenderer, SDL_DestroyRenderer
+extern SDL_PollEvent
 
 struc SDL_Event
     .type: resd 1
