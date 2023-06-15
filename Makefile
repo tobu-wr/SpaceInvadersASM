@@ -5,8 +5,8 @@ OBJ=$(SRC:.asm=.obj)
 $(EXE): $(OBJ)
 	gcc -o $(EXE) $(OBJ) SDL2.lib
 
-$(OBJ): $(SRC)
-	nasm -f win64 $(SRC)
+%.obj: %.asm
+	nasm -f win64 -o $@ $<
 
 clean:
 	@rm $(EXE) $(OBJ)
