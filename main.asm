@@ -1,9 +1,10 @@
-extern puts
-extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_PollEvent
+%include "sdl_events.asm"
 
-struc SDL_Event
-    type: resd 1
-endstruc
+extern puts
+extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow
+
+SDL_INIT_VIDEO: equ 0x20
+SDL_WINDOWPOS_UNDEFINED: equ 0x1fff0000
 
 section .text
 global main
@@ -17,7 +18,7 @@ main:
     je init_success
     mov rcx,init_msg_fail
     call puts
-    jmp end
+    jmp main_end
 init_success:
     mov rcx,init_msg_success
     call puts
@@ -26,9 +27,9 @@ init_success:
     mov rcx,title
     mov edx,SDL_WINDOWPOS_UNDEFINED ; x
     mov r8d,SDL_WINDOWPOS_UNDEFINED ; y
-    mov r9d,320 ; w
+    mov r9d,256 ; w
     sub rsp,16
-    mov dword [rsp+32],200 ; h
+    mov dword [rsp+32],224 ; h
     mov dword [rsp+40],0 ; flags
     call SDL_CreateWindow
     add rsp,16
@@ -45,16 +46,21 @@ create_window_success:
     call puts
 
     ; game loop
-game_loop:
+;game_loop:
+
     ; handle events
-    mov rcx,event
+handle_event:
+    mov rcx,0
     call SDL_PollEvent
+    cmp eax,0
+    je handle_event_end
+    ; TODO: handle event
+    jmp handle_event
+handle_event_end:
 
-
-    ; resume here
+    ; TODO
 
     ;jmp game_loop
-
 
     mov rcx,[window]
     call SDL_DestroyWindow
@@ -62,15 +68,12 @@ game_loop:
 uninit:
     call SDL_Quit
 
-end:
+main_end:
     add rsp,40
     mov eax,0
     ret
 
 section .data
-SDL_INIT_VIDEO: equ 0x20
-SDL_WINDOWPOS_UNDEFINED: equ 0x1fff0000
-
 init_msg_success:
     db "SDL_Init() success", 0
 init_msg_fail:
@@ -81,10 +84,9 @@ create_window_msg_fail:
     db "SDL_CreateWindow() fail", 0
 title:
     db "Space Invaders", 0
+
+section .bss
 window:
-    dq 0
-event:
-    istruc SDL_Event
-        at type, dd 0
-    iend
-    
+    resq 0
+; event:
+;     resb SDL_Event_size
