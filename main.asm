@@ -1,10 +1,6 @@
-%include "sdl_events.asm"
+%include "sdl.asm"
 
 extern puts
-extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow
-
-SDL_INIT_VIDEO: equ 0x20
-SDL_WINDOWPOS_UNDEFINED: equ 0x1fff0000
 
 section .text
 global main
@@ -84,9 +80,5 @@ create_window_msg_fail:
     db "SDL_CreateWindow() fail", 0
 title:
     db "Space Invaders", 0
-
-section .bss
 window:
-    resq 0
-; event:
-;     resb SDL_Event_size
+    dq 0
