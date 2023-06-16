@@ -7,11 +7,14 @@ OBJ=$(SRC:$(SRCDIR)%.asm=$(OUTDIR)%.obj)
 $(EXE): $(OBJ)
 	gcc -o $(EXE) $(OBJ) SDL2.lib
 
-$(OUTDIR)%.obj: $(SRCDIR)%.asm $(OUTDIR) 
+$(OUTDIR)%.obj: $(SRCDIR)%.asm
 	nasm -f win64 -o $@ $<
 
-$(OUTDIR):
-	@mkdir -p $(OUTDIR)
+$(OBJ): | $(OUTDIR)
 
+$(OUTDIR):
+	@mkdir $(OUTDIR)
+
+.PHONY: clean
 clean:
 	@rm $(EXE) $(OBJ)
