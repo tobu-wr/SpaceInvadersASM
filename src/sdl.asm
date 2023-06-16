@@ -3,7 +3,7 @@
 
 extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_CreateRenderer, SDL_DestroyRenderer
 extern IMG_Init, IMG_Quit, IMG_Load, SDL_FreeSurface, SDL_CreateTextureFromSurface, SDL_DestroyTexture
-extern SDL_PollEvent
+extern SDL_PollEvent, SDL_RenderCopy, SDL_RenderPresent
 
 struc SDL_Event
     .type: resd 1

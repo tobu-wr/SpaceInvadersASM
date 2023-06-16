@@ -71,7 +71,6 @@ main:
     call load_texture
     mov [background], rax
 
-    ; game loop
 .game_loop:
 
     ; handle events
@@ -85,12 +84,23 @@ main:
     jmp .handle_event
 .handle_event_end:
 
-    ; TODO
+    ; TODO: update game logic
+
+    ; render textures
+    mov rcx, [renderer]
+    mov rdx, [background] ; texture
+    mov r8, 0 ; srcrect
+    mov r9, 0 ; dstrect
+    call SDL_RenderCopy
+    mov rcx, [renderer]
+    call SDL_RenderPresent
 
     jmp .game_loop
 .game_loop_end:
 
     ; cleanup
+    mov rcx, [background]
+    call SDL_DestroyTexture
     call IMG_Quit
 .destroy_renderer:
     mov rcx, [renderer]
@@ -107,20 +117,20 @@ main:
     ret
 
 ; input: rcx = file of the texture to load
-; output: rax = address of the loaded texture
+; output: rax = loaded texture
 load_texture:
     sub rsp, 40
     call IMG_Load
     cmp rax, 0
     je .end
-    ; todo: push surface
+    ; TODO: push surface
     mov rcx, [renderer]
     mov rdx, rax ; surface
     call SDL_CreateTextureFromSurface
-    ; todo: pop surface to rcx
-    ; todo: push texture
+    ; TODO: pop surface to rcx
+    ; TODO: push texture
     ;call SDL_FreeSurface
-    ; todo: pop texture to rax
+    ; TODO: pop texture to rax
 .end:
     add rsp, 40
     ret
