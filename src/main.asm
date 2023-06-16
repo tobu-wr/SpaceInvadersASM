@@ -4,7 +4,7 @@ extern puts
 
 %macro create_texture 2
     mov rcx, %1
-    call create_texture_impl
+    call create_texture_func
     mov [%2], rax
 %endmacro
 
@@ -137,7 +137,7 @@ main:
 
 ; input: rcx = file
 ; output: rax = texture
-create_texture_impl:
+create_texture_func:
     sub rsp, 40
     call IMG_Load
     cmp rax, 0
