@@ -5,7 +5,7 @@ EXE=$(OUTDIR)space_invaders.exe
 OBJ=$(SRC:$(SRCDIR)%.asm=$(OUTDIR)%.obj)
 
 $(EXE): $(OBJ)
-	gcc -o $(EXE) $(OBJ) SDL2.lib
+	gcc -o $(EXE) $(OBJ) SDL2.lib SDL2_image.lib
 
 $(OUTDIR)%.obj: $(SRCDIR)%.asm
 	nasm -f win64 -I$(SRCDIR) -o $@ $<

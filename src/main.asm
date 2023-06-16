@@ -11,12 +11,12 @@ main:
     mov ecx, SDL_INIT_VIDEO ; flags
     call SDL_Init
     cmp eax, 0
-    je .init_success
-    mov rcx, init_msg_fail
+    je .init_sdl_success
+    mov rcx, init_sdl_msg_fail
     call puts
     jmp .main_end
-.init_success:
-    mov rcx, init_msg_success
+.init_sdl_success:
+    mov rcx, init_sdl_msg_success
     call puts
 
     ; create window
@@ -54,6 +54,18 @@ main:
     mov rcx, create_renderer_msg_success
     call puts
 
+    ; init SDL_image
+    mov ecx, IMG_INIT_PNG ; flags
+    call IMG_Init
+    cmp eax, IMG_INIT_PNG
+    je .init_sdl_image_success
+    mov rcx, init_sdl_image_msg_fail
+    call puts
+    jmp .destroy_renderer
+.init_sdl_image_success:
+    mov rcx, init_sdl_image_msg_success
+    call puts
+
     ; game loop
 .game_loop:
 
@@ -74,6 +86,8 @@ main:
 .game_loop_end:
 
     ; cleanup
+    call IMG_Quit
+.destroy_renderer:
     mov rcx, [renderer]
     call SDL_DestroyRenderer
 .destroy_window:
@@ -88,9 +102,9 @@ main:
     ret
 
 section .data
-init_msg_success:
+init_sdl_msg_success:
     db "SDL_Init() success", 0
-init_msg_fail:
+init_sdl_msg_fail:
     db "SDL_Init() fail", 0
 create_window_msg_success:
     db "SDL_CreateWindow() success", 0
@@ -100,6 +114,10 @@ create_renderer_msg_success:
     db "SDL_CreateRenderer() success", 0
 create_renderer_msg_fail:
     db "SDL_CreateRenderer() fail", 0
+init_sdl_image_msg_success:
+    db "IMG_Init() success", 0
+init_sdl_image_msg_fail:
+    db "IMG_Init() fail", 0
 title:
     db "Space Invaders", 0
 
