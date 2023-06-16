@@ -11,11 +11,11 @@ main:
     mov ecx, SDL_INIT_VIDEO ; flags
     call SDL_Init
     cmp eax, 0
-    je init_success
+    je .init_success
     mov rcx, init_msg_fail
     call puts
-    jmp main_end
-init_success:
+    jmp .main_end
+.init_success:
     mov rcx, init_msg_success
     call puts
 
@@ -30,13 +30,11 @@ init_success:
     call SDL_CreateWindow
     add rsp, 16
     cmp rax, 0
-    je create_window_fail
-    jmp create_window_success
-create_window_fail:
+    jne .create_window_success
     mov rcx, create_window_msg_fail
     call puts
-    jmp quit_sdl
-create_window_success:
+    jmp .quit_sdl
+.create_window_success:
     mov [window], rax
     mov rcx, create_window_msg_success
     call puts
@@ -47,48 +45,46 @@ create_window_success:
     mov r8d, 0 ; flags
     call SDL_CreateRenderer
     cmp rax, 0
-    je create_renderer_fail
-    jmp create_renderer_success
-create_renderer_fail:
+    jne .create_renderer_success
     mov rcx, create_renderer_msg_fail
     call puts
-    jmp destroy_window
-create_renderer_success:
+    jmp .destroy_window
+.create_renderer_success:
     mov [renderer], rax
     mov rcx, create_renderer_msg_success
     call puts
 
     ; game loop
-game_loop:
+.game_loop:
 
     ; handle events
-handle_event:
+.handle_event:
     mov rcx, event
     call SDL_PollEvent
     cmp eax, 0
-    je handle_event_end
+    je .handle_event_end
     cmp dword [event + SDL_Event.type], SDL_QUIT
-    je game_loop_end
-    jmp handle_event
-handle_event_end:
+    je .game_loop_end
+    jmp .handle_event
+.handle_event_end:
 
     ; TODO
 
-    jmp game_loop
-game_loop_end:
+    jmp .game_loop
+.game_loop_end:
 
     ; cleanup
     mov rcx, [renderer]
     call SDL_DestroyRenderer
-destroy_window:
+.destroy_window:
     mov rcx, [window]
     call SDL_DestroyWindow
-quit_sdl:
+.quit_sdl:
     call SDL_Quit
 
-main_end:
+.main_end:
     add rsp, 40
-    mov eax, 0
+    xor eax, eax
     ret
 
 section .data
