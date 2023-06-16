@@ -66,6 +66,11 @@ main:
     mov rcx, init_sdl_image_msg_success
     call puts
 
+    ; load textures
+    mov rcx, background_file
+    call load_texture
+    mov [background], rax
+
     ; game loop
 .game_loop:
 
@@ -101,6 +106,25 @@ main:
     xor eax, eax
     ret
 
+; input: rcx = file of the texture to load
+; output: rax = address of the loaded texture
+load_texture:
+    sub rsp, 40
+    call IMG_Load
+    cmp rax, 0
+    je .end
+    ; todo: push surface
+    mov rcx, [renderer]
+    mov rdx, rax ; surface
+    call SDL_CreateTextureFromSurface
+    ; todo: pop surface to rcx
+    ; todo: push texture
+    ;call SDL_FreeSurface
+    ; todo: pop texture to rax
+.end:
+    add rsp, 40
+    ret
+
 section .data
 init_sdl_msg_success:
     db "SDL_Init() success", 0
@@ -120,11 +144,15 @@ init_sdl_image_msg_fail:
     db "IMG_Init() fail", 0
 title:
     db "Space Invaders", 0
+background_file:
+    db "res/background.png", 0
 
 section .bss
 window:
     resq 1
 renderer:
+    resq 1
+background:
     resq 1
 event:
     resb SDL_Event_size
