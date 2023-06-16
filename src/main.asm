@@ -2,6 +2,17 @@
 
 extern puts
 
+%macro create_texture 2
+    mov rcx, %1
+    call create_texture_impl
+    mov [%2], rax
+%endmacro
+
+%macro destroy_texture 1
+    mov rcx, [%1]
+    call SDL_DestroyTexture
+%endmacro
+
 section .text
 global main
 main:
@@ -66,10 +77,8 @@ main:
     mov rcx, init_sdl_image_msg_success
     call puts
 
-    ; load textures
-    mov rcx, background_file
-    call load_texture
-    mov [background], rax
+    ; create textures
+    create_texture background_file, background
 
 .game_loop:
 
@@ -99,8 +108,7 @@ main:
 .game_loop_end:
 
     ; cleanup
-    mov rcx, [background]
-    call SDL_DestroyTexture
+    destroy_texture background
     call IMG_Quit
 .destroy_renderer:
     mov rcx, [renderer]
@@ -118,7 +126,7 @@ main:
 
 ; input: rcx = file of the texture to load
 ; output: rax = loaded texture
-load_texture:
+create_texture_impl:
     sub rsp, 40
     call IMG_Load
     cmp rax, 0
