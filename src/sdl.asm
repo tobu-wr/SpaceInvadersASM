@@ -1,9 +1,8 @@
 %ifndef SDL_ASM
 %define SDL_ASM
 
-extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow
-extern SDL_CreateRenderer, SDL_DestroyRenderer
-extern IMG_Init, IMG_Quit
+extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_CreateRenderer, SDL_DestroyRenderer
+extern IMG_Init, IMG_Quit, IMG_Load, SDL_FreeSurface, SDL_CreateTextureFromSurface, SDL_DestroyTexture
 extern SDL_PollEvent
 
 struc SDL_Event
