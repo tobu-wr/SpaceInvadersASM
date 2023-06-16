@@ -124,8 +124,8 @@ main:
     xor eax, eax
     ret
 
-; input: rcx = file of the texture to load
-; output: rax = loaded texture
+; input: rcx = file
+; output: rax = texture
 create_texture_impl:
     sub rsp, 40
     call IMG_Load
