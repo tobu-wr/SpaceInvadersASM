@@ -8,10 +8,23 @@ extern puts
     mov [%2], rax
 %endmacro
 
+%macro render_texture 2
+    mov rcx, [renderer]
+    mov rdx, [%1] ; texture
+    mov r8, 0 ; srcrect
+    mov r9, %2 ; dstrect
+    call SDL_RenderCopy
+%endmacro
+
 %macro destroy_texture 1
     mov rcx, [%1]
     call SDL_DestroyTexture
 %endmacro
+
+struc entity
+    .rect: resb SDL_Rect_size
+    .texture: resq 1
+endstruc
 
 section .text
 global main
@@ -80,6 +93,8 @@ main:
     ; create textures
     create_texture background_file, background
 
+    ; TODO: create entities
+
 .game_loop:
 
     ; handle events
@@ -95,12 +110,8 @@ main:
 
     ; TODO: update game logic
 
-    ; render textures
-    mov rcx, [renderer]
-    mov rdx, [background] ; texture
-    mov r8, 0 ; srcrect
-    mov r9, 0 ; dstrect
-    call SDL_RenderCopy
+    ; rendering
+    render_texture background, 0
     mov rcx, [renderer]
     call SDL_RenderPresent
 

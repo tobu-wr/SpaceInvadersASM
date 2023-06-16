@@ -10,6 +10,13 @@ struc SDL_Event
     .padding: resb 52
 endstruc
 
+struc SDL_Rect
+    .x: resd 1
+    .y: resd 1
+    .w: resd 1
+    .h: resd 1
+endstruc
+
 SDL_INIT_VIDEO: equ 0x20
 SDL_WINDOWPOS_UNDEFINED: equ 0x1fff0000
 SDL_QUIT: equ 0x100
