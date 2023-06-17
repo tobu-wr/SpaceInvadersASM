@@ -20,7 +20,7 @@ endstruc
 
 %macro render_texture 3
     mov rcx, [renderer]
-    mov rdx, [%1_texture] ; texture
+    mov rdx, [%1_texture]
     mov r8, %2 ; srcrect
     mov r9, %3 ; dstrect
     call SDL_RenderCopy
@@ -93,7 +93,7 @@ main:
     mov rcx, set_renderer_size_msg_fail
     call puts
     jmp .destroy_renderer
-.set_renderer_size_success
+.set_renderer_size_success:
     mov rcx, set_renderer_size_msg_success
     call puts
 
@@ -212,6 +212,10 @@ create_renderer_msg_success:
     db "SDL_CreateRenderer() success", 0
 create_renderer_msg_fail:
     db "SDL_CreateRenderer() fail", 0
+set_renderer_size_msg_success:
+    db "SDL_RenderSetLogicalSize() success", 0
+set_renderer_size_msg_fail:
+    db "SDL_RenderSetLogicalSize() fail", 0
 init_sdl_image_msg_success:
     db "IMG_Init() success", 0
 init_sdl_image_msg_fail:
