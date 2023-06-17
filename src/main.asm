@@ -108,7 +108,7 @@ main:
 
 .game_loop:
 
-    ; handle events
+    ; poll events
 .poll_event:
     mov rcx, event
     call SDL_PollEvent
@@ -118,11 +118,19 @@ main:
     je .game_loop_end
     jmp .poll_event
 .poll_event_end:
+
+    ; handle keys
+    ; FIXME!
     mov rcx, 0 ; numkeys
     call SDL_GetKeyboardState
-
-    ; update game logic
-    ; todo
+    cmp byte [rax + SDL_SCANCODE_RIGHT], 0
+    je .right_key_handled
+    add dword [cannon + entity.dstrect + SDL_Rect.x], 1
+.right_key_handled:
+    cmp byte [rax + SDL_SCANCODE_LEFT], 0
+    je .left_key_handled
+    sub dword [cannon + entity.dstrect + SDL_Rect.x], 1
+.left_key_handled:
 
     ; rendering
     render_texture space, 0, 0
