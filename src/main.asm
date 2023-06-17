@@ -109,17 +109,20 @@ main:
 .game_loop:
 
     ; handle events
-.handle_event:
+.poll_event:
     mov rcx, event
     call SDL_PollEvent
     cmp eax, 0
-    je .handle_event_end
+    je .poll_event_end
     cmp dword [event + SDL_Event.type], SDL_QUIT
     je .game_loop_end
-    jmp .handle_event
-.handle_event_end:
+    jmp .poll_event
+.poll_event_end:
+    mov rcx, 0 ; numkeys
+    call SDL_GetKeyboardState
 
-    ; TODO: update game logic
+    ; update game logic
+    ; todo
 
     ; rendering
     render_texture space, 0, 0
