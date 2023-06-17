@@ -124,6 +124,11 @@ main:
     mov dword [cannon + entity.dstrect + SDL_Rect.w], 13
     mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
 
+    ; get keyboard state
+    mov rcx, 0 ; numkeys
+    call SDL_GetKeyboardState
+    mov [keyboard_state], rax
+
 .game_loop:
 
     ; poll events
@@ -138,16 +143,14 @@ main:
 .poll_event_end:
 
     ; handle keys
-    ; FIXME!
-    mov rcx, 0 ; numkeys
-    call SDL_GetKeyboardState
+    mov rax, [keyboard_state]
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
     je .right_key_handled
-    add dword [cannon + entity.dstrect + SDL_Rect.x], 1
+    inc dword [cannon + entity.dstrect + SDL_Rect.x]
 .right_key_handled:
     cmp byte [rax + SDL_SCANCODE_LEFT], 0
     je .left_key_handled
-    sub dword [cannon + entity.dstrect + SDL_Rect.x], 1
+    dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_handled:
 
     ; rendering
@@ -252,3 +255,5 @@ cannon:
     resb entity_size
 event:
     resb SDL_Event_size
+keyboard_state:
+    resq 1
