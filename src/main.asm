@@ -47,9 +47,9 @@ main:
     mov rcx, title
     mov edx, SDL_WINDOWPOS_UNDEFINED ; x
     mov r8d, SDL_WINDOWPOS_UNDEFINED ; y
-    mov r9d, 256 ; w
+    mov r9d, 224 ; w
     sub rsp, 16
-    mov dword [rsp + 32], 224 ; h
+    mov dword [rsp + 32], 256 ; h
     mov dword [rsp + 40], 0 ; flags
     call SDL_CreateWindow
     add rsp, 16
