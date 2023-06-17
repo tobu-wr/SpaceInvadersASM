@@ -92,19 +92,19 @@ main:
     call puts
 
     ; create textures
-    create_texture background
-    create_texture player
-    create_texture ennemy1
-    create_texture ennemy2
-    create_texture ennemy3
+    create_texture space
+    create_texture cannon
+    create_texture large_invader
+    create_texture medium_invader
+    create_texture small_invader
 
     ; create entities
-    mov rax, [player_texture]
-    mov [player + entity.texture], rax
-    mov dword [player + entity.dstrect + SDL_Rect.x], 0
-    mov dword [player + entity.dstrect + SDL_Rect.y], 0
-    mov dword [player + entity.dstrect + SDL_Rect.w], 13
-    mov dword [player + entity.dstrect + SDL_Rect.h], 8
+    mov rax, [cannon_texture]
+    mov [cannon + entity.texture], rax
+    mov dword [cannon + entity.dstrect + SDL_Rect.x], 0
+    mov dword [cannon + entity.dstrect + SDL_Rect.y], 0
+    mov dword [cannon + entity.dstrect + SDL_Rect.w], 13
+    mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
 
 .game_loop:
 
@@ -122,8 +122,8 @@ main:
     ; TODO: update game logic
 
     ; rendering
-    render_texture background, 0, 0
-    render_texture player, 0, player + entity.dstrect
+    render_texture space, 0, 0
+    render_texture cannon, 0, cannon + entity.dstrect
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -131,11 +131,11 @@ main:
 .game_loop_end:
 
     ; cleanup
-    destroy_texture background
-    destroy_texture player
-    destroy_texture ennemy1
-    destroy_texture ennemy2
-    destroy_texture ennemy3
+    destroy_texture space
+    destroy_texture cannon
+    destroy_texture large_invader
+    destroy_texture medium_invader
+    destroy_texture small_invader
     call IMG_Quit
 .destroy_renderer:
     mov rcx, [renderer]
@@ -189,33 +189,33 @@ init_sdl_image_msg_fail:
     db "IMG_Init() fail", 0
 title:
     db "Space Invaders", 0
-background_file:
-    db "res/background.png", 0
-player_file:
-    db "res/player.png", 0
-ennemy1_file:
-    db "res/ennemy1.png", 0
-ennemy2_file:
-    db "res/ennemy2.png", 0
-ennemy3_file:
-    db "res/ennemy3.png", 0
+space_file:
+    db "res/space.png", 0
+cannon_file:
+    db "res/cannon.png", 0
+large_invader_file:
+    db "res/large_invader.png", 0
+medium_invader_file:
+    db "res/medium_invader.png", 0
+small_invader_file:
+    db "res/small_invader.png", 0
 
 section .bss
 window:
     resq 1
 renderer:
     resq 1
-background_texture:
+space_texture:
     resq 1
-player_texture:
+cannon_texture:
     resq 1
-ennemy1_texture:
+large_invader_texture:
     resq 1
-ennemy2_texture:
+medium_invader_texture:
     resq 1
-ennemy3_texture:
+small_invader_texture:
     resq 1
-player:
+cannon:
     resb entity_size
 event:
     resb SDL_Event_size
