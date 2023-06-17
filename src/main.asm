@@ -2,27 +2,28 @@
 
 extern puts
 
-%macro create_texture 2
-    mov rcx, %1
+%macro create_texture 1
+    mov rcx, %1_file
     call create_texture_func
-    mov [%2], rax
+    mov [%1_texture], rax
 %endmacro
 
-%macro render_texture 2
+%macro render_texture 3
     mov rcx, [renderer]
-    mov rdx, [%1] ; texture
-    mov r8, 0 ; srcrect
-    mov r9, %2 ; dstrect
+    mov rdx, [%1_texture] ; texture
+    mov r8, %2 ; srcrect
+    mov r9, %3 ; dstrect
     call SDL_RenderCopy
 %endmacro
 
 %macro destroy_texture 1
-    mov rcx, [%1]
+    mov rcx, [%1_texture]
     call SDL_DestroyTexture
 %endmacro
 
 struc entity
-    .rect: resb SDL_Rect_size
+    .srcrect: resb SDL_Rect_size
+    .dstrect: resb SDL_Rect_size
     .texture: resq 1
 endstruc
 
@@ -91,7 +92,11 @@ main:
     call puts
 
     ; create textures
-    create_texture background_file, background
+    create_texture background
+    create_texture player
+    create_texture ennemy1
+    create_texture ennemy2
+    create_texture ennemy3
 
     ; TODO: create entities
 
@@ -111,7 +116,7 @@ main:
     ; TODO: update game logic
 
     ; rendering
-    render_texture background, 0
+    render_texture background, 0, 0
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -120,6 +125,10 @@ main:
 
     ; cleanup
     destroy_texture background
+    destroy_texture player
+    destroy_texture ennemy1
+    destroy_texture ennemy2
+    destroy_texture ennemy3
     call IMG_Quit
 .destroy_renderer:
     mov rcx, [renderer]
@@ -175,13 +184,29 @@ title:
     db "Space Invaders", 0
 background_file:
     db "res/background.png", 0
+player_file:
+    db "res/player.png", 0
+ennemy1_file:
+    db "res/ennemy1.png", 0
+ennemy2_file:
+    db "res/ennemy2.png", 0
+ennemy3_file:
+    db "res/ennemy3.png", 0
 
 section .bss
 window:
     resq 1
 renderer:
     resq 1
-background:
+background_texture:
+    resq 1
+player_texture:
+    resq 1
+ennemy1_texture:
+    resq 1
+ennemy2_texture:
+    resq 1
+ennemy3_texture:
     resq 1
 event:
     resb SDL_Event_size
