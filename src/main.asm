@@ -2,6 +2,16 @@
 
 extern puts
 
+width: equ 224
+height: equ 256
+scale: equ 2
+
+struc entity
+    .texture: resq 1
+    .srcrect: resb SDL_Rect_size
+    .dstrect: resb SDL_Rect_size
+endstruc
+
 %macro create_texture 1
     mov rcx, %1_file
     call create_texture_func
@@ -20,12 +30,6 @@ extern puts
     mov rcx, [%1_texture]
     call SDL_DestroyTexture
 %endmacro
-
-struc entity
-    .texture: resq 1
-    .srcrect: resb SDL_Rect_size
-    .dstrect: resb SDL_Rect_size
-endstruc
 
 section .text
 global main
@@ -48,9 +52,9 @@ main:
     mov rcx, title
     mov edx, SDL_WINDOWPOS_UNDEFINED ; x
     mov r8d, SDL_WINDOWPOS_UNDEFINED ; y
-    mov r9d, 224 ; w
+    mov r9d, width * scale
     sub rsp, 16
-    mov dword [rsp + 32], 256 ; h
+    mov dword [rsp + 32], height * scale
     mov dword [rsp + 40], 0 ; flags
     call SDL_CreateWindow
     add rsp, 16
@@ -77,6 +81,20 @@ main:
 .create_renderer_success:
     mov [renderer], rax
     mov rcx, create_renderer_msg_success
+    call puts
+
+    ; set renderer size
+    mov rcx, [renderer]
+    mov edx, width
+    mov r8d, height
+    call SDL_RenderSetLogicalSize
+    cmp eax, 0
+    je .set_renderer_size_success
+    mov rcx, set_renderer_size_msg_fail
+    call puts
+    jmp .destroy_renderer
+.set_renderer_size_success
+    mov rcx, set_renderer_size_msg_success
     call puts
 
     ; init SDL_image

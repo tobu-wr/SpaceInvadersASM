@@ -1,7 +1,7 @@
 %ifndef SDL_ASM
 %define SDL_ASM
 
-extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_CreateRenderer, SDL_DestroyRenderer
+extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_CreateRenderer, SDL_DestroyRenderer, SDL_RenderSetLogicalSize
 extern IMG_Init, IMG_Quit, IMG_Load, SDL_FreeSurface, SDL_CreateTextureFromSurface, SDL_DestroyTexture
 extern SDL_PollEvent, SDL_GetKeyboardState, SDL_RenderCopy, SDL_RenderPresent
 
