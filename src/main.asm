@@ -22,9 +22,9 @@ extern puts
 %endmacro
 
 struc entity
+    .texture: resq 1
     .srcrect: resb SDL_Rect_size
     .dstrect: resb SDL_Rect_size
-    .texture: resq 1
 endstruc
 
 section .text
@@ -98,7 +98,13 @@ main:
     create_texture ennemy2
     create_texture ennemy3
 
-    ; TODO: create entities
+    ; create entities
+    mov rax, [player_texture]
+    mov [player + entity.texture], rax
+    mov dword [player + entity.dstrect + SDL_Rect.x], 0
+    mov dword [player + entity.dstrect + SDL_Rect.y], 0
+    mov dword [player + entity.dstrect + SDL_Rect.w], 13
+    mov dword [player + entity.dstrect + SDL_Rect.h], 8
 
 .game_loop:
 
@@ -117,6 +123,7 @@ main:
 
     ; rendering
     render_texture background, 0, 0
+    render_texture player, 0, player + entity.dstrect
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -208,5 +215,7 @@ ennemy2_texture:
     resq 1
 ennemy3_texture:
     resq 1
+player:
+    resb entity_size
 event:
     resb SDL_Event_size
