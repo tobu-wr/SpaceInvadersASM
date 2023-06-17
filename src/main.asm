@@ -102,7 +102,7 @@ main:
     mov rax, [cannon_texture]
     mov [cannon + entity.texture], rax
     mov dword [cannon + entity.dstrect + SDL_Rect.x], 0
-    mov dword [cannon + entity.dstrect + SDL_Rect.y], 0
+    mov dword [cannon + entity.dstrect + SDL_Rect.y], 216
     mov dword [cannon + entity.dstrect + SDL_Rect.w], 13
     mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
 
