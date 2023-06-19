@@ -151,14 +151,14 @@ main:
     call puts
 
     ; load textures
-    load_texture space_file, space_texture
-    load_texture cannon_file, cannon_texture
-    load_texture large_invader_file, large_invader_texture
-    load_texture medium_invader_file, medium_invader_texture
-    load_texture small_invader_file, small_invader_texture
+    load_texture space_texture_file, space_texture
+    load_texture cannon_texture_file, cannon_texture
+    load_texture large_invader_texture_file, large_invader_texture
+    load_texture medium_invader_texture_file, medium_invader_texture
+    load_texture small_invader_texture_file, small_invader_texture
 
     ; load sounds
-    load_sound laser_file, laser_sound
+    load_sound laser_sound_file, laser_sound
 
     ; create entities
     mov rax, [cannon_texture]
@@ -265,8 +265,8 @@ main:
 ; input: rcx = entity
 render_entity_func:
     sub rsp, 40
-    ; cmp byte [rcx + entity.alive], 0
-    ; je .end
+    cmp byte [rcx + entity.alive], 0
+    je .end
     mov rax, rcx
     render_texture rax + entity.texture, rax + entity.srcrect, rax + entity.dstrect
 .end:
@@ -359,17 +359,17 @@ load_sound_msg_fail:
     db "ERR > Failed to load sound (%s)", 10, 0
 title:
     db "Space Invaders", 0
-space_file:
+space_texture_file:
     db "res/space.png", 0
-cannon_file:
+cannon_texture_file:
     db "res/cannon.png", 0
-large_invader_file:
+large_invader_texture_file:
     db "res/large_invader.png", 0
-medium_invader_file:
+medium_invader_texture_file:
     db "res/medium_invader.png", 0
-small_invader_file:
+small_invader_texture_file:
     db "res/small_invader.png", 0
-laser_file:
+laser_sound_file:
     db "res/laser.wav", 0
 space_key_state:
     db 0
