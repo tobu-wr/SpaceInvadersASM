@@ -6,6 +6,8 @@ width: equ 224
 height: equ 256
 scale: equ 2
 
+cannon_width: equ 13
+
 struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
@@ -121,7 +123,7 @@ main:
     mov [cannon + entity.texture], rax
     mov dword [cannon + entity.dstrect + SDL_Rect.x], 0
     mov dword [cannon + entity.dstrect + SDL_Rect.y], 216
-    mov dword [cannon + entity.dstrect + SDL_Rect.w], 13
+    mov dword [cannon + entity.dstrect + SDL_Rect.w], cannon_width
     mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
 
     ; get keyboard state
@@ -150,9 +152,13 @@ main:
     mov rax, [keyboard_state]
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
     je .right_key_handled
+    cmp dword [cannon + entity.dstrect + SDL_Rect.x], width - cannon_width
+    je .right_key_handled
     inc dword [cannon + entity.dstrect + SDL_Rect.x]
 .right_key_handled:
     cmp byte [rax + SDL_SCANCODE_LEFT], 0
+    je .left_key_handled
+    cmp dword [cannon + entity.dstrect + SDL_Rect.x], 0
     je .left_key_handled
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_handled:
