@@ -1,6 +1,6 @@
 %include "sdl.asm"
 
-extern puts
+extern puts, printf
 
 width: equ 224
 height: equ 256
@@ -35,7 +35,7 @@ endstruc
 
 %macro load_sound 1
     mov rcx, %1_file
-    call Mix_LoadWAV
+    call load_sound_func
     mov [%1_sound], rax
 %endmacro
 
@@ -270,6 +270,26 @@ load_texture_func:
     add rsp, 40
     ret
 
+; input: rcx = file
+; output: rax = sound
+load_sound_func:
+    sub rsp, 56
+    mov [rsp + 40], rcx
+    call Mix_LoadWAV
+    mov rdx, [rsp + 40]
+    test rax, rax
+    jne .success
+    mov rcx, load_sound_msg_fail ; format
+    jmp .end
+.success:
+    mov rcx, load_sound_msg_success ; format
+.end:
+    mov [rsp + 40], rax
+    call printf
+    mov rax, [rsp + 40]
+    add rsp, 56
+    ret
+
 section .data
 init_sdl_msg_success:
     db "SDL_Init() success", 0
@@ -295,6 +315,10 @@ init_sdl_mixer_msg_success:
     db "Mix_OpenAudio() success", 0
 init_sdl_mixer_msg_fail:
     db "Mix_OpenAudio() fail", 0
+load_sound_msg_success:
+    db "%s successfully loaded", 10, 0
+load_sound_msg_fail:
+    db "Failed to load %s", 10, 0
 title:
     db "Space Invaders", 0
 space_file:
