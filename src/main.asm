@@ -292,33 +292,33 @@ load_sound_func:
 
 section .data
 init_sdl_msg_success:
-    db "SDL_Init() success", 0
+    db "OK > SDL_Init() success", 0
 init_sdl_msg_fail:
-    db "SDL_Init() fail", 0
+    db "ERR > SDL_Init() fail", 0
 create_window_msg_success:
-    db "SDL_CreateWindow() success", 0
+    db "OK > SDL_CreateWindow() success", 0
 create_window_msg_fail:
-    db "SDL_CreateWindow() fail", 0
+    db "ERR > SDL_CreateWindow() fail", 0
 create_renderer_msg_success:
-    db "SDL_CreateRenderer() success", 0
+    db "OK > SDL_CreateRenderer() success", 0
 create_renderer_msg_fail:
-    db "SDL_CreateRenderer() fail", 0
+    db "ERR > SDL_CreateRenderer() fail", 0
 set_renderer_size_msg_success:
-    db "SDL_RenderSetLogicalSize() success", 0
+    db "OK > SDL_RenderSetLogicalSize() success", 0
 set_renderer_size_msg_fail:
-    db "SDL_RenderSetLogicalSize() fail", 0
+    db "ERR > SDL_RenderSetLogicalSize() fail", 0
 init_sdl_image_msg_success:
-    db "IMG_Init() success", 0
+    db "OK > IMG_Init() success", 0
 init_sdl_image_msg_fail:
-    db "IMG_Init() fail", 0
+    db "ERR > IMG_Init() fail", 0
 init_sdl_mixer_msg_success:
-    db "Mix_OpenAudio() success", 0
+    db "OK > Mix_OpenAudio() success", 0
 init_sdl_mixer_msg_fail:
-    db "Mix_OpenAudio() fail", 0
+    db "ERR > Mix_OpenAudio() fail", 0
 load_sound_msg_success:
-    db "%s successfully loaded", 10, 0
+    db "OK > Sound successfully loaded (%s)", 10, 0
 load_sound_msg_fail:
-    db "Failed to load %s", 10, 0
+    db "ERR > Failed to load sound (%s)", 10, 0
 title:
     db "Space Invaders", 0
 space_file:
