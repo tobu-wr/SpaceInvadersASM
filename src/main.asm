@@ -12,7 +12,13 @@ struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
     .dstrect: resb SDL_Rect_size
+    .alive: resb 1
 endstruc
+
+%macro render_entity 1
+    mov rcx, %1
+    call render_entity_func
+%endmacro
 
 %macro load_texture 1
     mov rcx, %1_file
@@ -22,9 +28,9 @@ endstruc
 
 %macro render_texture 3
     mov rcx, [renderer]
-    mov rdx, [%1_texture]
-    mov r8, %2 ; srcrect
-    mov r9, %3 ; dstrect
+    mov rdx, [%1] ; texture
+    lea r8, [%2] ; srcrect
+    lea r9, [%3] ; dstrect
     call SDL_RenderCopy
 %endmacro
 
@@ -157,10 +163,15 @@ main:
     ; create entities
     mov rax, [cannon_texture]
     mov [cannon + entity.texture], rax
+    mov dword [cannon + entity.srcrect + SDL_Rect.x], 0
+    mov dword [cannon + entity.srcrect + SDL_Rect.y], 0
+    mov dword [cannon + entity.srcrect + SDL_Rect.w], 13
+    mov dword [cannon + entity.srcrect + SDL_Rect.h], 8
     mov dword [cannon + entity.dstrect + SDL_Rect.x], 0
     mov dword [cannon + entity.dstrect + SDL_Rect.y], 216
     mov dword [cannon + entity.dstrect + SDL_Rect.w], cannon_width
     mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
+    mov dword [cannon + entity.alive], 1
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -208,8 +219,8 @@ main:
 .space_key_end:
 
     ; render
-    render_texture space, 0, 0
-    render_texture cannon, 0, cannon + entity.dstrect
+    render_texture space_texture, 0, 0
+    render_entity cannon
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -249,6 +260,17 @@ main:
 .main_end:
     add rsp, 40
     xor eax, eax
+    ret
+
+; input: rcx = entity
+render_entity_func:
+    sub rsp, 40
+    ; cmp byte [rcx + entity.alive], 0
+    ; je .end
+    mov rax, rcx
+    render_texture rax + entity.texture, rax + entity.srcrect, rax + entity.dstrect
+.end:
+    add rsp, 40
     ret
 
 ; input: rcx = file
