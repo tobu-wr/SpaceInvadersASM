@@ -254,29 +254,41 @@ main:
 ; input: rcx = file
 ; output: rax = texture
 load_texture_func:
-    sub rsp, 40
+    sub rsp, 56
+    mov [rsp + 48], rcx
     call IMG_Load
+    mov [rsp + 40], rax
     test rax, rax
-    je .end
-    ; TODO: push surface
+    jne .load_img_success
+    mov rcx, load_texture_msg_fail ; format
+    jmp .end
+.load_img_success:
     mov rcx, [renderer]
     mov rdx, rax ; surface
     call SDL_CreateTextureFromSurface
-    ; TODO: pop surface to rcx
-    ; TODO: push texture
-    ;call SDL_FreeSurface
-    ; TODO: pop texture to rax
+    mov rcx, [rsp + 40]
+    mov [rsp + 40], rax
+    call SDL_FreeSurface
+    cmp qword [rsp + 40], 0
+    jne .create_texture_success
+    mov rcx, load_texture_msg_fail ; format
+    jmp .end
+.create_texture_success:
+    mov rcx, load_texture_msg_success ; format
 .end:
-    add rsp, 40
+    mov rdx, [rsp + 48]
+    call printf
+    mov rax, [rsp + 40]
+    add rsp, 56
     ret
 
 ; input: rcx = file
 ; output: rax = sound
 load_sound_func:
-    sub rsp, 56
-    mov [rsp + 40], rcx
+    sub rsp, 40
+    mov [rsp + 32], rcx
     call Mix_LoadWAV
-    mov rdx, [rsp + 40]
+    mov rdx, [rsp + 32]
     test rax, rax
     jne .success
     mov rcx, load_sound_msg_fail ; format
@@ -284,10 +296,10 @@ load_sound_func:
 .success:
     mov rcx, load_sound_msg_success ; format
 .end:
-    mov [rsp + 40], rax
+    mov [rsp + 32], rax
     call printf
-    mov rax, [rsp + 40]
-    add rsp, 56
+    mov rax, [rsp + 32]
+    add rsp, 40
     ret
 
 section .data
@@ -315,6 +327,10 @@ init_sdl_mixer_msg_success:
     db "OK > Mix_OpenAudio() success", 0
 init_sdl_mixer_msg_fail:
     db "ERR > Mix_OpenAudio() fail", 0
+load_texture_msg_success:
+    db "OK > Texture successfully loaded (%s)", 10, 0
+load_texture_msg_fail:
+    db "ERR > Failed to load texture (%s)", 10, 0
 load_sound_msg_success:
     db "OK > Sound successfully loaded (%s)", 10, 0
 load_sound_msg_fail:
