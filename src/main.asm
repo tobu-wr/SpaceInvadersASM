@@ -82,7 +82,7 @@ main:
     jne .create_window_success
     mov rcx, create_window_msg_fail
     call puts
-    jmp .quit_sdl
+    jmp .free_sdl
 .create_window_success:
     mov [window], rax
     mov rcx, create_window_msg_success
@@ -97,7 +97,7 @@ main:
     jne .create_renderer_success
     mov rcx, create_renderer_msg_fail
     call puts
-    jmp .destroy_window
+    jmp .free_window
 .create_renderer_success:
     mov [renderer], rax
     mov rcx, create_renderer_msg_success
@@ -112,7 +112,7 @@ main:
     je .set_renderer_size_success
     mov rcx, set_renderer_size_msg_fail
     call puts
-    jmp .destroy_renderer
+    jmp .free_renderer
 .set_renderer_size_success:
     mov rcx, set_renderer_size_msg_success
     call puts
@@ -124,13 +124,13 @@ main:
     je .init_sdl_image_success
     mov rcx, init_sdl_image_msg_fail
     call puts
-    jmp .destroy_renderer
+    jmp .free_renderer
 .init_sdl_image_success:
     mov rcx, init_sdl_image_msg_success
     call puts
 
     ; init SDL_mixer
-    mov ecx, 44_100 ; frequency
+    mov ecx, 44100 ; frequency
     mov dx, AUDIO_U8 ; format
     mov r8w, 1 ; channels
     mov r9w, 512 ; chunksize
@@ -139,7 +139,7 @@ main:
     je .init_sdl_mixer_success
     mov rcx, init_sdl_mixer_msg_fail
     call puts
-    jmp .quit_sdl_image
+    jmp .free_sdl_image
 .init_sdl_mixer_success:
     mov rcx, init_sdl_mixer_msg_success
     call puts
@@ -187,25 +187,25 @@ main:
     ; handle keys
     mov rax, [keyboard_state]
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
-    je .right_key_handled
+    je .right_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], width - cannon_width
-    je .right_key_handled
+    je .right_key_end
     inc dword [cannon + entity.dstrect + SDL_Rect.x]
-.right_key_handled:
+.right_key_end:
     cmp byte [rax + SDL_SCANCODE_LEFT], 0
-    je .left_key_handled
+    je .left_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], 0
-    je .left_key_handled
+    je .left_key_end
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
-.left_key_handled:
+.left_key_end:
     mov al, byte [rax + SDL_SCANCODE_SPACE]
     cmp al, byte [space_key_state]
-    je .space_key_handled
+    je .space_key_end
     mov byte [space_key_state], al
     test al, al
-    je .space_key_handled
+    je .space_key_end
     play_sound laser
-.space_key_handled:
+.space_key_end:
 
     ; render
     render_texture space, 0, 0
@@ -235,15 +235,15 @@ main:
     free_texture small_invader
     free_sound laser
     call Mix_CloseAudio
-.quit_sdl_image:
+.free_sdl_image:
     call IMG_Quit
-.destroy_renderer:
+.free_renderer:
     mov rcx, [renderer]
     call SDL_DestroyRenderer
-.destroy_window:
+.free_window:
     mov rcx, [window]
     call SDL_DestroyWindow
-.quit_sdl:
+.free_sdl:
     call SDL_Quit
 
 .main_end:
