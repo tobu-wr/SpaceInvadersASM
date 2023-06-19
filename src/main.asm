@@ -20,10 +20,10 @@ endstruc
     call render_entity_func
 %endmacro
 
-%macro load_texture 1
-    mov rcx, %1_file
+%macro load_texture 2
+    mov rcx, %1 ; file
     call load_texture_func
-    mov [%1_texture], rax
+    mov [%2], rax ; texture
 %endmacro
 
 %macro render_texture 3
@@ -35,25 +35,25 @@ endstruc
 %endmacro
 
 %macro free_texture 1
-    mov rcx, [%1_texture]
+    mov rcx, [%1] ; texture
     call SDL_DestroyTexture
 %endmacro
 
-%macro load_sound 1
-    mov rcx, %1_file
+%macro load_sound 2
+    mov rcx, %1 ; file
     call load_sound_func
-    mov [%1_sound], rax
+    mov [%2], rax ; sound
 %endmacro
 
 %macro play_sound 1
     mov ecx, -1 ; channel
-    mov rdx, [%1_sound]
+    mov rdx, [%1] ; sound
     mov r8d, 0 ; loops
     call Mix_PlayChannel
 %endmacro
 
 %macro free_sound 1
-    mov rcx, [%1_sound]
+    mov rcx, [%1] ; sound
     call Mix_FreeChunk
 %endmacro
 
@@ -151,14 +151,14 @@ main:
     call puts
 
     ; load textures
-    load_texture space
-    load_texture cannon
-    load_texture large_invader
-    load_texture medium_invader
-    load_texture small_invader
+    load_texture space_file, space_texture
+    load_texture cannon_file, cannon_texture
+    load_texture large_invader_file, large_invader_texture
+    load_texture medium_invader_file, medium_invader_texture
+    load_texture small_invader_file, small_invader_texture
 
     ; load sounds
-    load_sound laser
+    load_sound laser_file, laser_sound
 
     ; create entities
     mov rax, [cannon_texture]
@@ -215,7 +215,7 @@ main:
     mov byte [space_key_state], al
     test al, al
     je .space_key_end
-    play_sound laser
+    play_sound laser_sound
 .space_key_end:
 
     ; render
@@ -239,12 +239,12 @@ main:
 .game_loop_end:
 
     ; cleanup
-    free_texture space
-    free_texture cannon
-    free_texture large_invader
-    free_texture medium_invader
-    free_texture small_invader
-    free_sound laser
+    free_texture space_texture
+    free_texture cannon_texture
+    free_texture large_invader_texture
+    free_texture medium_invader_texture
+    free_texture small_invader_texture
+    free_sound laser_sound
     call Mix_CloseAudio
 .free_sdl_image:
     call IMG_Quit
