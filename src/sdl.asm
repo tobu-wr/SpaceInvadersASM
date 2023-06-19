@@ -4,6 +4,7 @@
 extern SDL_Init, SDL_Quit, SDL_CreateWindow, SDL_DestroyWindow, SDL_CreateRenderer, SDL_DestroyRenderer, SDL_RenderSetLogicalSize
 extern IMG_Init, IMG_Quit, IMG_Load, SDL_FreeSurface, SDL_CreateTextureFromSurface, SDL_DestroyTexture
 extern SDL_PollEvent, SDL_GetKeyboardState, SDL_RenderCopy, SDL_RenderPresent
+extern SDL_GetTicks, SDL_Delay
 
 struc SDL_Event
     .type: resd 1
@@ -18,7 +19,7 @@ struc SDL_Rect
 endstruc
 
 SDL_INIT_VIDEO: equ 0x20
-SDL_WINDOWPOS_UNDEFINED: equ 0x1fff0000
+SDL_WINDOWPOS_UNDEFINED: equ 0x1fff_0000
 SDL_QUIT: equ 0x100
 SDL_SCANCODE_RIGHT: equ 79
 SDL_SCANCODE_LEFT: equ 80

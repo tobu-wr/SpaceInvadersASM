@@ -129,6 +129,10 @@ main:
     call SDL_GetKeyboardState
     mov [keyboard_state], rax
 
+    ; init tick count
+    call SDL_GetTicks
+    mov [ticks], eax
+
 .game_loop:
 
     ; poll events
@@ -153,11 +157,22 @@ main:
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_handled:
 
-    ; rendering
+    ; render
     render_texture space, 0, 0
     render_texture cannon, 0, cannon + entity.dstrect
     mov rcx, [renderer]
     call SDL_RenderPresent
+
+    ; limit framerate to ~60fps
+    call SDL_GetTicks
+    mov ecx, eax
+    sub eax, [ticks]
+    mov [ticks], ecx
+    mov ecx, 16
+    sub ecx, eax
+    jna .delay_end
+    call SDL_Delay
+.delay_end:
 
     jmp .game_loop
 .game_loop_end:
@@ -257,3 +272,5 @@ event:
     resb SDL_Event_size
 keyboard_state:
     resq 1
+ticks:
+    resd 1
