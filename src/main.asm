@@ -15,8 +15,27 @@ struc entity
     .alive: resb 1
 endstruc
 
+%macro set_entity_texture 2
+    mov rax, [%2] ; texture
+    mov [%1 + entity.texture], rax
+%endmacro
+
+%macro set_entity_srcrect 5
+    mov dword [%1 + entity.srcrect + SDL_Rect.x], %2 ; x
+    mov dword [%1 + entity.srcrect + SDL_Rect.y], %3 ; y
+    mov dword [%1 + entity.srcrect + SDL_Rect.w], %4 ; w
+    mov dword [%1 + entity.srcrect + SDL_Rect.h], %5 ; h
+%endmacro
+
+%macro set_entity_dstrect 5
+    mov dword [%1 + entity.dstrect + SDL_Rect.x], %2 ; x
+    mov dword [%1 + entity.dstrect + SDL_Rect.y], %3 ; y
+    mov dword [%1 + entity.dstrect + SDL_Rect.w], %4 ; w
+    mov dword [%1 + entity.dstrect + SDL_Rect.h], %5 ; h
+%endmacro
+
 %macro render_entity 1
-    mov rcx, %1
+    mov rcx, %1 ; entity
     call render_entity_func
 %endmacro
 
@@ -161,16 +180,9 @@ main:
     load_sound laser_sound_file, laser_sound
 
     ; create entities
-    mov rax, [cannon_texture]
-    mov [cannon + entity.texture], rax
-    mov dword [cannon + entity.srcrect + SDL_Rect.x], 0
-    mov dword [cannon + entity.srcrect + SDL_Rect.y], 0
-    mov dword [cannon + entity.srcrect + SDL_Rect.w], 13
-    mov dword [cannon + entity.srcrect + SDL_Rect.h], 8
-    mov dword [cannon + entity.dstrect + SDL_Rect.x], 0
-    mov dword [cannon + entity.dstrect + SDL_Rect.y], 216
-    mov dword [cannon + entity.dstrect + SDL_Rect.w], cannon_width
-    mov dword [cannon + entity.dstrect + SDL_Rect.h], 8
+    set_entity_texture cannon, cannon_texture
+    set_entity_srcrect cannon, 0, 0, 13, 8
+    set_entity_dstrect cannon, 0, 216, cannon_width, 8
     mov dword [cannon + entity.alive], 1
 
     ; get keyboard state
