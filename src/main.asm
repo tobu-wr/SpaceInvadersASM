@@ -162,6 +162,15 @@ main:
     je .left_key_handled
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_handled:
+    mov al, byte [rax + SDL_SCANCODE_SPACE]
+    cmp al, byte [space_key_state]
+    je .space_key_handled
+    mov byte [space_key_state], al
+    test al, al
+    je .space_key_handled
+    mov rcx, fire_laser_msg
+    call puts
+.space_key_handled:
 
     ; render
     render_texture space, 0, 0
@@ -256,6 +265,10 @@ medium_invader_file:
     db "res/medium_invader.png", 0
 small_invader_file:
     db "res/small_invader.png", 0
+space_key_state:
+    db 0
+fire_laser_msg:
+    db "fire laser!", 0
 
 section .bss
 window:
