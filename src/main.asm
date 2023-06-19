@@ -33,13 +33,31 @@ endstruc
     call SDL_DestroyTexture
 %endmacro
 
+%macro load_sound 1
+    mov rcx, %1_file
+    call Mix_LoadWAV
+    mov [%1_sound], rax
+%endmacro
+
+%macro play_sound 1
+    mov ecx, -1 ; channel
+    mov rdx, [%1_sound]
+    mov r8d, 0 ; loops
+    call Mix_PlayChannel
+%endmacro
+
+%macro free_sound 1
+    mov rcx, [%1_sound]
+    call Mix_FreeChunk
+%endmacro
+
 section .text
 global main
 main:
     sub rsp, 40
 
     ; init SDL
-    mov ecx, SDL_INIT_VIDEO ; flags
+    mov ecx, SDL_INIT_VIDEO | SDL_INIT_AUDIO ; flags
     call SDL_Init
     test eax, eax
     je .init_sdl_success
@@ -111,12 +129,30 @@ main:
     mov rcx, init_sdl_image_msg_success
     call puts
 
+    ; init SDL_mixer
+    mov ecx, 44_100 ; frequency
+    mov dx, AUDIO_U8 ; format
+    mov r8w, 1 ; channels
+    mov r9w, 512 ; chunksize
+    call Mix_OpenAudio
+    test eax, eax
+    je .init_sdl_mixer_success
+    mov rcx, init_sdl_mixer_msg_fail
+    call puts
+    jmp .quit_sdl_image
+.init_sdl_mixer_success:
+    mov rcx, init_sdl_mixer_msg_success
+    call puts
+
     ; create textures
     create_texture space
     create_texture cannon
     create_texture large_invader
     create_texture medium_invader
     create_texture small_invader
+
+    ; load sounds
+    load_sound laser
 
     ; create entities
     mov rax, [cannon_texture]
@@ -168,8 +204,7 @@ main:
     mov byte [space_key_state], al
     test al, al
     je .space_key_handled
-    mov rcx, fire_laser_msg
-    call puts
+    play_sound laser
 .space_key_handled:
 
     ; render
@@ -198,6 +233,9 @@ main:
     destroy_texture large_invader
     destroy_texture medium_invader
     destroy_texture small_invader
+    free_sound laser
+    call Mix_CloseAudio
+.quit_sdl_image:
     call IMG_Quit
 .destroy_renderer:
     mov rcx, [renderer]
@@ -253,6 +291,10 @@ init_sdl_image_msg_success:
     db "IMG_Init() success", 0
 init_sdl_image_msg_fail:
     db "IMG_Init() fail", 0
+init_sdl_mixer_msg_success:
+    db "Mix_OpenAudio() success", 0
+init_sdl_mixer_msg_fail:
+    db "Mix_OpenAudio() fail", 0
 title:
     db "Space Invaders", 0
 space_file:
@@ -265,10 +307,10 @@ medium_invader_file:
     db "res/medium_invader.png", 0
 small_invader_file:
     db "res/small_invader.png", 0
+laser_file:
+    db "res/laser.wav", 0
 space_key_state:
     db 0
-fire_laser_msg:
-    db "fire laser!", 0
 
 section .bss
 window:
@@ -284,6 +326,8 @@ large_invader_texture:
 medium_invader_texture:
     resq 1
 small_invader_texture:
+    resq 1
+laser_sound:
     resq 1
 cannon:
     resb entity_size
