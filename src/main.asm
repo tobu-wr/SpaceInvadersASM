@@ -39,7 +39,7 @@ main:
     ; init SDL
     mov ecx, SDL_INIT_VIDEO ; flags
     call SDL_Init
-    cmp eax, 0
+    test eax, eax
     je .init_sdl_success
     mov rcx, init_sdl_msg_fail
     call puts
@@ -58,7 +58,7 @@ main:
     mov dword [rsp + 40], 0 ; flags
     call SDL_CreateWindow
     add rsp, 16
-    cmp rax, 0
+    test rax, rax
     jne .create_window_success
     mov rcx, create_window_msg_fail
     call puts
@@ -73,7 +73,7 @@ main:
     mov edx, -1 ; index
     mov r8d, 0 ; flags
     call SDL_CreateRenderer
-    cmp rax, 0
+    test rax, rax
     jne .create_renderer_success
     mov rcx, create_renderer_msg_fail
     call puts
@@ -88,7 +88,7 @@ main:
     mov edx, width
     mov r8d, height
     call SDL_RenderSetLogicalSize
-    cmp eax, 0
+    test eax, eax
     je .set_renderer_size_success
     mov rcx, set_renderer_size_msg_fail
     call puts
@@ -139,7 +139,7 @@ main:
 .poll_event:
     mov rcx, event
     call SDL_PollEvent
-    cmp eax, 0
+    test eax, eax
     je .poll_event_end
     cmp dword [event + SDL_Event.type], SDL_QUIT
     je .game_loop_end
@@ -203,7 +203,7 @@ main:
 create_texture_func:
     sub rsp, 40
     call IMG_Load
-    cmp rax, 0
+    test rax, rax
     je .end
     ; TODO: push surface
     mov rcx, [renderer]
