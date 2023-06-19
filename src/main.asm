@@ -14,9 +14,9 @@ struc entity
     .dstrect: resb SDL_Rect_size
 endstruc
 
-%macro create_texture 1
+%macro load_texture 1
     mov rcx, %1_file
-    call create_texture_func
+    call load_texture_func
     mov [%1_texture], rax
 %endmacro
 
@@ -28,7 +28,7 @@ endstruc
     call SDL_RenderCopy
 %endmacro
 
-%macro destroy_texture 1
+%macro free_texture 1
     mov rcx, [%1_texture]
     call SDL_DestroyTexture
 %endmacro
@@ -144,12 +144,12 @@ main:
     mov rcx, init_sdl_mixer_msg_success
     call puts
 
-    ; create textures
-    create_texture space
-    create_texture cannon
-    create_texture large_invader
-    create_texture medium_invader
-    create_texture small_invader
+    ; load textures
+    load_texture space
+    load_texture cannon
+    load_texture large_invader
+    load_texture medium_invader
+    load_texture small_invader
 
     ; load sounds
     load_sound laser
@@ -228,11 +228,11 @@ main:
 .game_loop_end:
 
     ; cleanup
-    destroy_texture space
-    destroy_texture cannon
-    destroy_texture large_invader
-    destroy_texture medium_invader
-    destroy_texture small_invader
+    free_texture space
+    free_texture cannon
+    free_texture large_invader
+    free_texture medium_invader
+    free_texture small_invader
     free_sound laser
     call Mix_CloseAudio
 .quit_sdl_image:
@@ -253,7 +253,7 @@ main:
 
 ; input: rcx = file
 ; output: rax = texture
-create_texture_func:
+load_texture_func:
     sub rsp, 40
     call IMG_Load
     test rax, rax
