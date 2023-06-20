@@ -257,7 +257,7 @@ main:
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     add eax, cannon_width / 2
     mov [laser + entity.dstrect + SDL_Rect.x], eax
-    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height
+    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y
     mov byte [laser + entity.alive], 1
 .space_key_end:
 
