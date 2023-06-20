@@ -201,8 +201,8 @@ main:
     ; create laser
     set_entity_texture laser, laser_texture
     set_entity_srcrect laser, 0, 0, 1, laser_height
-    set_entity_dstrect laser, 0, -laser_height, 1, laser_height
-    mov byte [laser + entity.alive], 1
+    set_entity_dstrect laser, 0, 0, 1, laser_height
+    mov byte [laser + entity.alive], 0
 
     ; create invaders
     create_invaders small_invader_texture, 8, 8, 0, 1
@@ -251,11 +251,14 @@ main:
     mov [space_key_state], al
     test al, al
     je .space_key_end
+    cmp byte [laser + entity.alive], 1
+    je .space_key_end
     play_sound laser_sound
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     add eax, cannon_width / 2
     mov [laser + entity.dstrect + SDL_Rect.x], eax
     mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height
+    mov byte [laser + entity.alive], 1
 .space_key_end:
 
     ; update laser position
