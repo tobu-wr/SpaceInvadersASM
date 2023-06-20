@@ -192,8 +192,8 @@ main:
     ; create laser entity
     set_entity_texture laser, laser_texture
     set_entity_srcrect laser, 0, 0, 1, laser_height
-    set_entity_dstrect laser, 0, 0, 1, laser_height
-    mov byte [laser + entity.alive], 0
+    set_entity_dstrect laser, 0, -laser_height, 1, laser_height
+    mov byte [laser + entity.alive], 1
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -242,8 +242,10 @@ main:
     add eax, cannon_width / 2
     mov [laser + entity.dstrect + SDL_Rect.x], eax
     mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height
-    mov byte [laser + entity.alive], 1
 .space_key_end:
+
+    ; update laser position
+    sub dword [laser + entity.dstrect + SDL_Rect.y], 4
 
     ; render
     render_texture space_texture, 0, 0
