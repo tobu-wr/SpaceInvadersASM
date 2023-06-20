@@ -80,7 +80,7 @@ endstruc
 section .text
 global main
 main:
-    sub rsp, 40
+    sub rsp, 56
 
     ; init SDL
     mov ecx, SDL_INIT_VIDEO | SDL_INIT_AUDIO ; flags
@@ -99,11 +99,9 @@ main:
     mov edx, SDL_WINDOWPOS_UNDEFINED ; x
     mov r8d, SDL_WINDOWPOS_UNDEFINED ; y
     mov r9d, width * scale
-    sub rsp, 16
     mov dword [rsp + 32], height * scale
     mov dword [rsp + 40], 0 ; flags
     call SDL_CreateWindow
-    add rsp, 16
     test rax, rax
     jne .create_window_success
     mov rcx, create_window_msg_fail
@@ -271,7 +269,7 @@ main:
     call SDL_Quit
 
 .main_end:
-    add rsp, 40
+    add rsp, 56
     xor eax, eax
     ret
 
