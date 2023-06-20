@@ -6,8 +6,11 @@ width: equ 224
 height: equ 256
 scale: equ 2
 
+cannon_y: equ 216
 cannon_width: equ 13
 cannon_height: equ 8
+
+laser_height: equ 4
 
 struc entity
     .texture: resq 1
@@ -22,17 +25,17 @@ endstruc
 %endmacro
 
 %macro set_entity_srcrect 5
-    mov dword [%1 + entity.srcrect + SDL_Rect.x], %2 ; x
-    mov dword [%1 + entity.srcrect + SDL_Rect.y], %3 ; y
-    mov dword [%1 + entity.srcrect + SDL_Rect.w], %4 ; w
-    mov dword [%1 + entity.srcrect + SDL_Rect.h], %5 ; h
+    mov dword [%1 + entity.srcrect + SDL_Rect.x], %2
+    mov dword [%1 + entity.srcrect + SDL_Rect.y], %3
+    mov dword [%1 + entity.srcrect + SDL_Rect.w], %4
+    mov dword [%1 + entity.srcrect + SDL_Rect.h], %5
 %endmacro
 
 %macro set_entity_dstrect 5
-    mov dword [%1 + entity.dstrect + SDL_Rect.x], %2 ; x
-    mov dword [%1 + entity.dstrect + SDL_Rect.y], %3 ; y
-    mov dword [%1 + entity.dstrect + SDL_Rect.w], %4 ; w
-    mov dword [%1 + entity.dstrect + SDL_Rect.h], %5 ; h
+    mov dword [%1 + entity.dstrect + SDL_Rect.x], %2
+    mov dword [%1 + entity.dstrect + SDL_Rect.y], %3
+    mov dword [%1 + entity.dstrect + SDL_Rect.w], %4
+    mov dword [%1 + entity.dstrect + SDL_Rect.h], %5
 %endmacro
 
 %macro render_entity 1
@@ -180,11 +183,17 @@ main:
     ; load sounds
     load_sound laser_sound_file, laser_sound
 
-    ; create entities
+    ; create cannon entity
     set_entity_texture cannon, cannon_texture
     set_entity_srcrect cannon, 0, 0, cannon_width, cannon_height
-    set_entity_dstrect cannon, 0, 216, cannon_width, cannon_height
+    set_entity_dstrect cannon, 0, cannon_y, cannon_width, cannon_height
     mov byte [cannon + entity.alive], 1
+
+    ; create laser entity
+    set_entity_texture laser, laser_texture
+    set_entity_srcrect laser, 0, 0, 1, laser_height
+    set_entity_dstrect laser, 0, 0, 1, laser_height
+    mov byte [laser + entity.alive], 0
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -222,18 +231,24 @@ main:
     je .left_key_end
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_end:
-    mov al, byte [rax + SDL_SCANCODE_SPACE]
-    cmp al, byte [space_key_state]
+    mov al, [rax + SDL_SCANCODE_SPACE]
+    cmp al, [space_key_state]
     je .space_key_end
-    mov byte [space_key_state], al
+    mov [space_key_state], al
     test al, al
     je .space_key_end
     play_sound laser_sound
+    mov eax, [cannon + entity.dstrect + SDL_Rect.x]
+    add eax, cannon_width / 2
+    mov [laser + entity.dstrect + SDL_Rect.x], eax
+    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height
+    mov byte [laser + entity.alive], 1
 .space_key_end:
 
     ; render
     render_texture space_texture, 0, 0
     render_entity cannon
+    render_entity laser
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -415,6 +430,8 @@ saucer_texture:
 laser_sound:
     resq 1
 cannon:
+    resb entity_size
+laser:
     resb entity_size
 event:
     resb SDL_Event_size
