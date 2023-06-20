@@ -171,9 +171,11 @@ main:
     ; load textures
     load_texture space_texture_file, space_texture
     load_texture cannon_texture_file, cannon_texture
+    load_texture laser_texture_file, laser_texture
     load_texture large_invader_texture_file, large_invader_texture
     load_texture medium_invader_texture_file, medium_invader_texture
     load_texture small_invader_texture_file, small_invader_texture
+    load_texture saucer_texture_file, saucer_texture
 
     ; load sounds
     load_sound laser_sound_file, laser_sound
@@ -252,9 +254,11 @@ main:
     ; cleanup
     free_texture space_texture
     free_texture cannon_texture
+    free_texture laser_texture
     free_texture large_invader_texture
     free_texture medium_invader_texture
     free_texture small_invader_texture
+    free_texture saucer_texture
     free_sound laser_sound
     call Mix_CloseAudio
 .free_sdl_image:
@@ -374,12 +378,16 @@ space_texture_file:
     db "res/space.png", 0
 cannon_texture_file:
     db "res/cannon.png", 0
+laser_texture_file:
+    db "res/laser.png", 0
 large_invader_texture_file:
     db "res/large_invader.png", 0
 medium_invader_texture_file:
     db "res/medium_invader.png", 0
 small_invader_texture_file:
     db "res/small_invader.png", 0
+saucer_texture_file:
+    db "res/saucer.png", 0
 laser_sound_file:
     db "res/laser.wav", 0
 space_key_state:
@@ -394,11 +402,15 @@ space_texture:
     resq 1
 cannon_texture:
     resq 1
+laser_texture:
+    resq 1
 large_invader_texture:
     resq 1
 medium_invader_texture:
     resq 1
 small_invader_texture:
+    resq 1
+saucer_texture:
     resq 1
 laser_sound:
     resq 1
