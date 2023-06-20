@@ -7,6 +7,7 @@ height: equ 256
 scale: equ 2
 
 cannon_width: equ 13
+cannon_height: equ 8
 
 struc entity
     .texture: resq 1
@@ -181,9 +182,9 @@ main:
 
     ; create entities
     set_entity_texture cannon, cannon_texture
-    set_entity_srcrect cannon, 0, 0, 13, 8
-    set_entity_dstrect cannon, 0, 216, cannon_width, 8
-    mov dword [cannon + entity.alive], 1
+    set_entity_srcrect cannon, 0, 0, cannon_width, cannon_height
+    set_entity_dstrect cannon, 0, 216, cannon_width, cannon_height
+    mov byte [cannon + entity.alive], 1
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
