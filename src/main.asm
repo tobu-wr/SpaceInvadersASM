@@ -11,6 +11,7 @@ cannon_width: equ 13
 cannon_height: equ 8
 
 laser_height: equ 4
+laser_speed: equ 4
 
 struc entity
     .texture: resq 1
@@ -168,8 +169,8 @@ main:
     ; init SDL_mixer
     mov ecx, 44100 ; frequency
     mov dx, AUDIO_U8 ; format
-    mov r8w, 1 ; channels
-    mov r9w, 512 ; chunksize
+    mov r8d, 1 ; channels
+    mov r9d, 512 ; chunksize
     call Mix_OpenAudio
     test eax, eax
     je .init_sdl_mixer_success
@@ -257,14 +258,14 @@ main:
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     add eax, cannon_width / 2
     mov [laser + entity.dstrect + SDL_Rect.x], eax
-    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y
+    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height + laser_speed
     mov byte [laser + entity.alive], 1
 .space_key_end:
 
     ; update laser
     cmp byte [laser + entity.alive], 0
     je .update_laser_end
-    sub dword [laser + entity.dstrect + SDL_Rect.y], 4
+    sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
     cmp dword [laser + entity.dstrect + SDL_Rect.y], -laser_height
     jg .update_laser_end
     mov byte [laser + entity.alive], 0
