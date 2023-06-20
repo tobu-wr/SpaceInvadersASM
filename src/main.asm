@@ -19,6 +19,15 @@ struc entity
     .alive: resb 1
 endstruc
 
+%macro create_invaders 5
+    mov rcx, %1 ; texture
+    mov edx, %2 ; w
+    mov r8d, %3 ; h
+    mov r9d, %4 ; row index
+    mov dword [rsp + 32], 0 ; row count
+    call create_invaders_func
+%endmacro
+
 %macro set_entity_texture 2
     mov rax, [%2] ; texture
     mov [%1 + entity.texture], rax
@@ -183,17 +192,22 @@ main:
     ; load sounds
     load_sound laser_sound_file, laser_sound
 
-    ; create cannon entity
+    ; create cannon
     set_entity_texture cannon, cannon_texture
     set_entity_srcrect cannon, 0, 0, cannon_width, cannon_height
     set_entity_dstrect cannon, 0, cannon_y, cannon_width, cannon_height
     mov byte [cannon + entity.alive], 1
 
-    ; create laser entity
+    ; create laser
     set_entity_texture laser, laser_texture
     set_entity_srcrect laser, 0, 0, 1, laser_height
     set_entity_dstrect laser, 0, -laser_height, 1, laser_height
     mov byte [laser + entity.alive], 1
+
+    ; create invaders
+    create_invaders small_invader_texture, 8, 8, 0, 1
+    create_invaders medium_invader_texture, 11, 8, 1, 2
+    create_invaders large_invader_texture, 12, 8, 3, 2
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -251,6 +265,7 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
+    render_entity invaders
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -292,6 +307,23 @@ main:
 .main_end:
     add rsp, 56
     xor eax, eax
+    ret
+
+; inputs:
+; - rcx = texture
+; - edx = w
+; - r8d = h
+; - r9d = row index
+; - stack = row count
+create_invaders_func:
+    sub rsp, 40
+
+    ; set_entity_texture invaders, rcx
+    ; set_entity_srcrect invaders, 0, 0
+    ; set_entity_dstrect invaders, 0, 0, small_invader_width, small_invader_height
+    ; mov byte [invaders + entity.alive], 1
+
+    add rsp, 40
     ret
 
 ; input: rcx = entity
@@ -435,6 +467,8 @@ cannon:
     resb entity_size
 laser:
     resb entity_size
+invaders:
+    resq entity_size * 5 * 11
 event:
     resb SDL_Event_size
 keyboard_state:
