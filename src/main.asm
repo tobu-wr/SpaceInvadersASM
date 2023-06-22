@@ -16,6 +16,8 @@ laser_speed: equ 4
 small_invader_width: equ 8
 medium_invader_width: equ 11
 large_invader_width: equ 12
+invader_height: equ 8
+invaders_count: equ 5 * 11
 
 struc entity
     .texture: resq 1
@@ -279,7 +281,7 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
-    render_entity invaders
+    call render_invaders
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -330,12 +332,33 @@ main:
 create_invaders_func:
     sub rsp, 40
 
-    ; set_entity_texture invaders, rcx
-    ; set_entity_srcrect invaders, 0, 0
-    ; set_entity_dstrect invaders, 0, 0, small_invader_width, small_invader_height
-    ; mov byte [invaders + entity.alive], 1
+    set_entity_texture invaders, rcx
+    set_entity_srcrect invaders, 0, 0, edx, invader_height
+    set_entity_dstrect invaders, 0, 0, edx, invader_height
+    mov byte [invaders + entity.alive], 1
+
+    set_entity_texture invaders + entity_size, rcx
+    set_entity_srcrect invaders + entity_size, 0, 0, edx, invader_height
+    set_entity_dstrect invaders + entity_size, 15, 0, edx, invader_height
+    mov byte [invaders + entity.alive + entity_size], 1
 
     add rsp, 40
+    ret
+
+render_invaders:
+    push rsi
+    push rbx
+    sub rsp, 40
+    mov rsi, invaders
+    mov bl, invaders_count
+.loop:
+    render_entity rsi
+    add rsi, entity_size
+    dec bl
+    jnz .loop
+    add rsp, 40
+    pop rbx
+    pop rsi
     ret
 
 ; input: rcx = entity
@@ -480,7 +503,7 @@ cannon:
 laser:
     resb entity_size
 invaders:
-    resq entity_size * 5 * 11
+    resq entity_size * invaders_count
 event:
     resb SDL_Event_size
 keyboard_state:
