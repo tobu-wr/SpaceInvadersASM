@@ -2,8 +2,8 @@
 
 extern puts, printf
 
-width: equ 224
-height: equ 256
+screen_width: equ 224
+screen_height: equ 256
 scale: equ 2
 
 cannon_y: equ 216
@@ -22,10 +22,9 @@ endstruc
 
 %macro create_invaders 5
     mov rcx, %1 ; texture
-    mov edx, %2 ; w
-    mov r8d, %3 ; h
+    mov edx, %2 ; width
+    mov r8d, %3 ; height
     mov r9d, %4 ; row index
-    mov dword [rsp + 32], 0 ; row count
     call create_invaders_func
 %endmacro
 
@@ -111,8 +110,8 @@ main:
     mov rcx, title
     mov edx, SDL_WINDOWPOS_UNDEFINED ; x
     mov r8d, SDL_WINDOWPOS_UNDEFINED ; y
-    mov r9d, width * scale
-    mov dword [rsp + 32], height * scale
+    mov r9d, screen_width * scale
+    mov dword [rsp + 32], screen_height * scale
     mov dword [rsp + 40], 0 ; flags
     call SDL_CreateWindow
     test rax, rax
@@ -142,8 +141,8 @@ main:
 
     ; set renderer size
     mov rcx, [renderer]
-    mov edx, width
-    mov r8d, height
+    mov edx, screen_width
+    mov r8d, screen_height
     call SDL_RenderSetLogicalSize
     test eax, eax
     je .set_renderer_size_success
@@ -236,7 +235,7 @@ main:
     mov rax, [keyboard_state]
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
     je .right_key_end
-    cmp dword [cannon + entity.dstrect + SDL_Rect.x], width - cannon_width
+    cmp dword [cannon + entity.dstrect + SDL_Rect.x], screen_width - cannon_width
     je .right_key_end
     inc dword [cannon + entity.dstrect + SDL_Rect.x]
 .right_key_end:
@@ -315,16 +314,15 @@ main:
     call SDL_Quit
 
 .main_end:
-    add rsp, 56
     xor eax, eax
+    add rsp, 56
     ret
 
 ; inputs:
 ; - rcx = texture
-; - edx = w
-; - r8d = h
+; - edx = width
+; - r8d = height
 ; - r9d = row index
-; - stack = row count
 create_invaders_func:
     sub rsp, 40
 
