@@ -13,6 +13,10 @@ cannon_height: equ 8
 laser_height: equ 4
 laser_speed: equ 4
 
+small_invader_width: equ 8
+medium_invader_width: equ 11
+large_invader_width: equ 12
+
 struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
@@ -20,11 +24,10 @@ struc entity
     .alive: resb 1
 endstruc
 
-%macro create_invaders 5
+%macro create_invaders 3
     mov rcx, %1 ; texture
     mov edx, %2 ; width
-    mov r8d, %3 ; height
-    mov r9d, %4 ; row index
+    mov r8d, %3 ; row index
     call create_invaders_func
 %endmacro
 
@@ -205,9 +208,11 @@ main:
     mov byte [laser + entity.alive], 0
 
     ; create invaders
-    create_invaders small_invader_texture, 8, 8, 0, 1
-    create_invaders medium_invader_texture, 11, 8, 1, 2
-    create_invaders large_invader_texture, 12, 8, 3, 2
+    create_invaders small_invader_texture, small_invader_width, 0
+    create_invaders medium_invader_texture, medium_invader_width, 1
+    create_invaders medium_invader_texture, medium_invader_width, 2
+    create_invaders large_invader_texture, large_invader_width, 3
+    create_invaders large_invader_texture, large_invader_width, 4
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -319,10 +324,9 @@ main:
     ret
 
 ; inputs:
-; - rcx = texture
-; - edx = width
-; - r8d = height
-; - r9d = row index
+;   rcx = texture
+;   edx = width
+;   r8d = row index
 create_invaders_func:
     sub rsp, 40
 
