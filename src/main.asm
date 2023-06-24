@@ -200,6 +200,7 @@ main:
 
     ; load sounds
     load_sound laser_sound_file, laser_sound
+    load_sound alien_explosion_sound_file, alien_explosion_sound
 
     ; create cannon
     set_entity_texture cannon, cannon_texture
@@ -286,6 +287,37 @@ main:
     mov byte [laser + entity.alive], 0
 .update_laser_end:
 
+    ; check for collision
+    cmp byte [laser + entity.alive], 0
+    je .check_collision_end
+    mov rsi, aliens
+    mov bl, aliens_count
+.check_collision:
+    cmp byte [rsi + entity.alive], 0
+    je .check_collision_next
+    mov eax, dword [rsi + entity.dstrect + SDL_Rect.x]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    jg .check_collision_next
+    add eax, dword [rsi + entity.dstrect + SDL_Rect.w]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    jle .check_collision_next
+    mov eax, dword [rsi + entity.dstrect + SDL_Rect.y]
+    add eax, dword [rsi + entity.dstrect + SDL_Rect.h]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
+    jle .check_collision_next
+    play_sound alien_explosion_sound
+    mov byte [rsi + entity.alive], 0
+    mov byte [laser + entity.alive], 0
+    jmp .check_collision_end
+.check_collision_next:
+    add rsi, entity_size
+    dec bl
+    jnz .check_collision
+.check_collision_end:
+
+    ; update aliens
+    ; todo
+
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
@@ -326,6 +358,7 @@ main:
     free_texture small_alien_texture
     free_texture saucer_texture
     free_sound laser_sound
+    free_sound alien_explosion_sound
     call Mix_CloseAudio
 .free_sdl_image:
     call IMG_Quit
@@ -492,6 +525,8 @@ saucer_texture_file:
     db "res/saucer.png", 0
 laser_sound_file:
     db "res/laser.wav", 0
+alien_explosion_sound_file:
+    db "res/alien_explosion.wav", 0
 space_key_state:
     db 0
 
@@ -515,6 +550,8 @@ small_alien_texture:
 saucer_texture:
     resq 1
 laser_sound:
+    resq 1
+alien_explosion_sound:
     resq 1
 cannon:
     resb entity_size
