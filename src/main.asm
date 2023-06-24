@@ -242,20 +242,25 @@ main:
     jmp .poll_event
 .poll_event_end:
 
-    ; handle keys
     mov rax, [keyboard_state]
+
+    ; handle right key
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
     je .right_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], screen_width - cannon_width
     je .right_key_end
     inc dword [cannon + entity.dstrect + SDL_Rect.x]
 .right_key_end:
+
+    ; handle left key
     cmp byte [rax + SDL_SCANCODE_LEFT], 0
     je .left_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], 0
     je .left_key_end
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
 .left_key_end:
+
+    ; handle space key
     mov al, [rax + SDL_SCANCODE_SPACE]
     cmp al, [space_key_state]
     je .space_key_end
@@ -281,10 +286,11 @@ main:
     mov byte [laser + entity.alive], 0
 .update_laser_end:
 
-    ; render
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
+
+    ; render aliens
     mov rsi, aliens
     mov bl, aliens_count
 .render_alien:
@@ -292,6 +298,8 @@ main:
     add rsi, entity_size
     dec bl
     jnz .render_alien
+
+    ; update screen
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -352,11 +360,11 @@ create_aliens_func:
 
     mov eax, 16
     mul r8d
-    lea r8d, [eax + 56] ; todo: find the correct offset
+    lea r8d, [eax + 56]
     
     mov edx, r9d ; restore edx
 
-    mov r9d, 16 ; todo: find the correct offset
+    mov r9d, 16
     mov r11b, aliens_column_count
 .loop:
     set_entity_texture r10, rcx
