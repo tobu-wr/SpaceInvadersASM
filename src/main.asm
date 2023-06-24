@@ -13,12 +13,13 @@ cannon_height: equ 8
 laser_height: equ 4
 laser_speed: equ 4
 
-small_invader_width: equ 8
-medium_invader_width: equ 11
-large_invader_width: equ 12
-invader_height: equ 8
-invaders_column_count: equ 11
-invaders_count: equ 5 * invaders_column_count
+small_alien_width: equ 8
+medium_alien_width: equ 11
+large_alien_width: equ 12
+alien_height: equ 8
+aliens_row_count: equ 5
+aliens_column_count: equ 11
+aliens_count: equ aliens_row_count * aliens_column_count
 
 struc entity
     .texture: resq 1
@@ -27,11 +28,11 @@ struc entity
     .alive: resb 1
 endstruc
 
-%macro create_invaders 3
+%macro create_aliens 3
     mov rcx, %1 ; texture
     mov edx, %2 ; width
     mov r8d, %3 ; row index
-    call create_invaders_func
+    call create_aliens_func
 %endmacro
 
 %macro set_entity_texture 2
@@ -192,9 +193,9 @@ main:
     load_texture space_texture_file, space_texture
     load_texture cannon_texture_file, cannon_texture
     load_texture laser_texture_file, laser_texture
-    load_texture large_invader_texture_file, large_invader_texture
-    load_texture medium_invader_texture_file, medium_invader_texture
-    load_texture small_invader_texture_file, small_invader_texture
+    load_texture large_alien_texture_file, large_alien_texture
+    load_texture medium_alien_texture_file, medium_alien_texture
+    load_texture small_alien_texture_file, small_alien_texture
     load_texture saucer_texture_file, saucer_texture
 
     ; load sounds
@@ -212,12 +213,12 @@ main:
     set_entity_dstrect laser, 0, 0, 1, laser_height
     mov byte [laser + entity.alive], 0
 
-    ; create invaders
-    create_invaders small_invader_texture, small_invader_width, 0
-    create_invaders medium_invader_texture, medium_invader_width, 1
-    create_invaders medium_invader_texture, medium_invader_width, 2
-    create_invaders large_invader_texture, large_invader_width, 3
-    create_invaders large_invader_texture, large_invader_width, 4
+    ; create aliens
+    create_aliens small_alien_texture, small_alien_width, 0
+    create_aliens medium_alien_texture, medium_alien_width, 1
+    create_aliens medium_alien_texture, medium_alien_width, 2
+    create_aliens large_alien_texture, large_alien_width, 3
+    create_aliens large_alien_texture, large_alien_width, 4
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -284,13 +285,13 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
-    mov rsi, invaders
-    mov bl, invaders_count
-.render_invader:
+    mov rsi, aliens
+    mov bl, aliens_count
+.render_alien:
     render_entity rsi
     add rsi, entity_size
     dec bl
-    jnz .render_invader
+    jnz .render_alien
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -312,9 +313,9 @@ main:
     free_texture space_texture
     free_texture cannon_texture
     free_texture laser_texture
-    free_texture large_invader_texture
-    free_texture medium_invader_texture
-    free_texture small_invader_texture
+    free_texture large_alien_texture
+    free_texture medium_alien_texture
+    free_texture small_alien_texture
     free_texture saucer_texture
     free_sound laser_sound
     call Mix_CloseAudio
@@ -340,14 +341,14 @@ main:
 ;   rcx = texture
 ;   edx = width
 ;   r8d = row index
-create_invaders_func:
+create_aliens_func:
     sub rsp, 40
 
     mov r9d, edx ; save edx
     
-    mov rax, entity_size * invaders_column_count
+    mov rax, entity_size * aliens_column_count
     mul r8d
-    lea r10, [rax + invaders]
+    lea r10, [rax + aliens]
 
     mov eax, 16
     mul r8d
@@ -356,11 +357,11 @@ create_invaders_func:
     mov edx, r9d ; restore edx
 
     mov r9d, 16 ; todo: find the correct offset
-    mov r11b, invaders_column_count
+    mov r11b, aliens_column_count
 .loop:
     set_entity_texture r10, rcx
-    set_entity_srcrect r10, 0, 0, edx, invader_height
-    set_entity_dstrect r10, r9d, r8d, edx, invader_height
+    set_entity_srcrect r10, 0, 0, edx, alien_height
+    set_entity_dstrect r10, r9d, r8d, edx, alien_height
     mov byte [r10 + entity.alive], 1
     add r10, entity_size
     add r9d, 16
@@ -473,12 +474,12 @@ cannon_texture_file:
     db "res/cannon.png", 0
 laser_texture_file:
     db "res/laser.png", 0
-large_invader_texture_file:
-    db "res/large_invader.png", 0
-medium_invader_texture_file:
-    db "res/medium_invader.png", 0
-small_invader_texture_file:
-    db "res/small_invader.png", 0
+large_alien_texture_file:
+    db "res/large_alien.png", 0
+medium_alien_texture_file:
+    db "res/medium_alien.png", 0
+small_alien_texture_file:
+    db "res/small_alien.png", 0
 saucer_texture_file:
     db "res/saucer.png", 0
 laser_sound_file:
@@ -497,11 +498,11 @@ cannon_texture:
     resq 1
 laser_texture:
     resq 1
-large_invader_texture:
+large_alien_texture:
     resq 1
-medium_invader_texture:
+medium_alien_texture:
     resq 1
-small_invader_texture:
+small_alien_texture:
     resq 1
 saucer_texture:
     resq 1
@@ -511,8 +512,8 @@ cannon:
     resb entity_size
 laser:
     resb entity_size
-invaders:
-    resq entity_size * invaders_count
+aliens:
+    resq entity_size * aliens_count
 event:
     resb SDL_Event_size
 keyboard_state:
