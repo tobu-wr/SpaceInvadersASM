@@ -97,6 +97,8 @@ endstruc
 section .text
 global main
 main:
+    push rsi
+    push rbx
     sub rsp, 56
 
     ; init SDL
@@ -281,7 +283,13 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
-    call render_invaders
+    mov rsi, invaders
+    mov bl, invaders_count
+.render_invader:
+    render_entity rsi
+    add rsi, entity_size
+    dec bl
+    jnz .render_invader
     mov rcx, [renderer]
     call SDL_RenderPresent
 
@@ -323,6 +331,8 @@ main:
 .main_end:
     xor eax, eax
     add rsp, 56
+    pop rbx
+    pop rsi
     ret
 
 ; inputs:
@@ -343,22 +353,6 @@ create_invaders_func:
     mov byte [invaders + entity.alive + entity_size], 1
 
     add rsp, 40
-    ret
-
-render_invaders:
-    push rsi
-    push rbx
-    sub rsp, 40
-    mov rsi, invaders
-    mov bl, invaders_count
-.loop:
-    render_entity rsi
-    add rsi, entity_size
-    dec bl
-    jnz .loop
-    add rsp, 40
-    pop rbx
-    pop rsi
     ret
 
 ; input: rcx = entity
