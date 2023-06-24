@@ -17,7 +17,8 @@ small_invader_width: equ 8
 medium_invader_width: equ 11
 large_invader_width: equ 12
 invader_height: equ 8
-invaders_count: equ 5 * 11
+invaders_column_count: equ 11
+invaders_count: equ 5 * invaders_column_count
 
 struc entity
     .texture: resq 1
@@ -342,15 +343,29 @@ main:
 create_invaders_func:
     sub rsp, 40
 
-    set_entity_texture invaders, rcx
-    set_entity_srcrect invaders, 0, 0, edx, invader_height
-    set_entity_dstrect invaders, 0, 0, edx, invader_height
-    mov byte [invaders + entity.alive], 1
+    mov r9d, edx ; save edx
+    
+    mov rax, entity_size * invaders_column_count
+    mul r8d
+    lea r10, [rax + invaders]
 
-    set_entity_texture invaders + entity_size, rcx
-    set_entity_srcrect invaders + entity_size, 0, 0, edx, invader_height
-    set_entity_dstrect invaders + entity_size, 15, 0, edx, invader_height
-    mov byte [invaders + entity.alive + entity_size], 1
+    mov eax, 16
+    mul r8d
+    lea r8d, [eax + 56] ; todo: find the correct offset
+    
+    mov edx, r9d ; restore edx
+
+    mov r9d, 16 ; todo: find the correct offset
+    mov r11b, invaders_column_count
+.loop:
+    set_entity_texture r10, rcx
+    set_entity_srcrect r10, 0, 0, edx, invader_height
+    set_entity_dstrect r10, r9d, r8d, edx, invader_height
+    mov byte [r10 + entity.alive], 1
+    add r10, entity_size
+    add r9d, 16
+    dec r11b
+    jnz .loop
 
     add rsp, 40
     ret
