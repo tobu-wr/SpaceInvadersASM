@@ -23,7 +23,7 @@ aliens_count: equ aliens_row_count * aliens_column_count
 
 shelter_width: equ 22
 shelter_height: equ 16
-shelter_count: equ 4
+shelters_count: equ 4
 
 struc entity
     .texture: resq 1
@@ -229,7 +229,7 @@ main:
     ; create shelters
     mov rcx, shelters
     mov r8d, 32
-    mov dl, shelter_count
+    mov dl, shelters_count
 .create_shelter:
     set_entity_texture rcx, shelter_texture
     set_entity_srcrect rcx, 0, 0, shelter_width, shelter_height
@@ -298,41 +298,67 @@ main:
 .space_key_end:
 
     cmp byte [laser + entity.alive], 0
-    je .check_collision_end
+    je .check_collision_aliens_end
 
     ; update laser
     sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
     cmp dword [laser + entity.dstrect + SDL_Rect.y], -laser_height
     jg .update_laser_end
     mov byte [laser + entity.alive], 0
-    jmp .check_collision_end
+    jmp .check_collision_aliens_end
 .update_laser_end:
 
-    ; check for collision
-    mov rsi, aliens
-    mov bl, aliens_count
-.check_collision:
+    ; check for collision with shelters
+    mov rsi, shelters
+    mov bl, shelters_count
+.check_collision_shelters:
     cmp byte [rsi + entity.alive], 0
-    je .check_collision_next
+    je .check_collision_shelters_next
     mov eax, dword [rsi + entity.dstrect + SDL_Rect.x]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
-    ja .check_collision_next
+    ja .check_collision_shelters_next
     add eax, dword [rsi + entity.dstrect + SDL_Rect.w]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
-    jbe .check_collision_next
+    jbe .check_collision_shelters_next
     mov eax, dword [rsi + entity.dstrect + SDL_Rect.y]
     add eax, dword [rsi + entity.dstrect + SDL_Rect.h]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
-    jbe .check_collision_next
+    jbe .check_collision_shelters_next
+    ;play_sound alien_explosion_sound
+    ;mov byte [rsi + entity.alive], 0
+    mov byte [laser + entity.alive], 0
+    jmp .check_collision_aliens_end
+.check_collision_shelters_next:
+    add rsi, entity_size
+    dec bl
+    jnz .check_collision_shelters
+.check_collision_shelters_end:
+
+    ; check for collision with aliens
+    mov rsi, aliens
+    mov bl, aliens_count
+.check_collision_aliens:
+    cmp byte [rsi + entity.alive], 0
+    je .check_collision_aliens_next
+    mov eax, dword [rsi + entity.dstrect + SDL_Rect.x]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    ja .check_collision_aliens_next
+    add eax, dword [rsi + entity.dstrect + SDL_Rect.w]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    jbe .check_collision_aliens_next
+    mov eax, dword [rsi + entity.dstrect + SDL_Rect.y]
+    add eax, dword [rsi + entity.dstrect + SDL_Rect.h]
+    cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
+    jbe .check_collision_aliens_next
     play_sound alien_explosion_sound
     mov byte [rsi + entity.alive], 0
     mov byte [laser + entity.alive], 0
-    jmp .check_collision_end
-.check_collision_next:
+    jmp .check_collision_aliens_end
+.check_collision_aliens_next:
     add rsi, entity_size
     dec bl
-    jnz .check_collision
-.check_collision_end:
+    jnz .check_collision_aliens
+.check_collision_aliens_end:
 
     ; update aliens
     ; todo
@@ -352,7 +378,7 @@ main:
 
     ; render shelters
     mov rsi, shelters
-    mov bl, shelter_count
+    mov bl, shelters_count
 .render_shelter:
     render_entity rsi
     add rsi, entity_size
@@ -593,7 +619,7 @@ laser:
 aliens:
     resq entity_size * aliens_count
 shelters:
-    resq entity_size * shelter_count
+    resq entity_size * shelters_count
 event:
     resb SDL_Event_size
 keyboard_state:
