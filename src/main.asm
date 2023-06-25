@@ -297,14 +297,14 @@ main:
     je .check_collision_next
     mov eax, dword [rsi + entity.dstrect + SDL_Rect.x]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
-    jg .check_collision_next
+    ja .check_collision_next
     add eax, dword [rsi + entity.dstrect + SDL_Rect.w]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
-    jle .check_collision_next
+    jbe .check_collision_next
     mov eax, dword [rsi + entity.dstrect + SDL_Rect.y]
     add eax, dword [rsi + entity.dstrect + SDL_Rect.h]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
-    jle .check_collision_next
+    jbe .check_collision_next
     play_sound alien_explosion_sound
     mov byte [rsi + entity.alive], 0
     mov byte [laser + entity.alive], 0
