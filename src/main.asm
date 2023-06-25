@@ -226,11 +226,19 @@ main:
     create_aliens_row large_alien_texture, large_alien_width, 3
     create_aliens_row large_alien_texture, large_alien_width, 4
 
-    ; create shelters (todo)
-    set_entity_texture shelters, shelter_texture
-    set_entity_srcrect shelters, 0, 0, shelter_width, shelter_height
-    set_entity_dstrect shelters, 32, 192, shelter_width, shelter_height
-    mov byte [shelters + entity.alive], 1
+    ; create shelters
+    mov rcx, shelters
+    mov r8d, 32
+    mov dl, shelter_count
+.create_shelter:
+    set_entity_texture rcx, shelter_texture
+    set_entity_srcrect rcx, 0, 0, shelter_width, shelter_height
+    set_entity_dstrect rcx, r8d, 192, shelter_width, shelter_height
+    mov byte [rcx + entity.alive], 1
+    add rcx, entity_size
+    add r8d, shelter_width + 23
+    dec dl
+    jnz .create_shelter
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
