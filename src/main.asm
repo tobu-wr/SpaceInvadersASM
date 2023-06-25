@@ -21,6 +21,10 @@ aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
 
+shelter_width: equ 22
+shelter_height: equ 16
+shelter_count: equ 4
+
 struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
@@ -28,11 +32,11 @@ struc entity
     .alive: resb 1
 endstruc
 
-%macro create_aliens 3
+%macro create_aliens_row 3
     mov rcx, %1 ; texture
     mov edx, %2 ; width
     mov r8d, %3 ; row index
-    call create_aliens_func
+    call create_aliens_row_func
 %endmacro
 
 %macro set_entity_texture 2
@@ -196,6 +200,7 @@ main:
     load_texture large_alien_texture_file, large_alien_texture
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
+    load_texture shelter_texture_file, shelter_texture
     load_texture saucer_texture_file, saucer_texture
 
     ; load sounds
@@ -215,11 +220,17 @@ main:
     mov byte [laser + entity.alive], 0
 
     ; create aliens
-    create_aliens small_alien_texture, small_alien_width, 0
-    create_aliens medium_alien_texture, medium_alien_width, 1
-    create_aliens medium_alien_texture, medium_alien_width, 2
-    create_aliens large_alien_texture, large_alien_width, 3
-    create_aliens large_alien_texture, large_alien_width, 4
+    create_aliens_row small_alien_texture, small_alien_width, 0
+    create_aliens_row medium_alien_texture, medium_alien_width, 1
+    create_aliens_row medium_alien_texture, medium_alien_width, 2
+    create_aliens_row large_alien_texture, large_alien_width, 3
+    create_aliens_row large_alien_texture, large_alien_width, 4
+
+    ; create shelters (todo)
+    set_entity_texture shelters, shelter_texture
+    set_entity_srcrect shelters, 0, 0, shelter_width, shelter_height
+    set_entity_dstrect shelters, 32, 192, shelter_width, shelter_height
+    mov byte [shelters + entity.alive], 1
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -331,6 +342,15 @@ main:
     dec bl
     jnz .render_alien
 
+    ; render shelters
+    mov rsi, shelters
+    mov bl, shelter_count
+.render_shelter:
+    render_entity rsi
+    add rsi, entity_size
+    dec bl
+    jnz .render_shelter
+
     ; update screen
     mov rcx, [renderer]
     call SDL_RenderPresent
@@ -356,6 +376,7 @@ main:
     free_texture large_alien_texture
     free_texture medium_alien_texture
     free_texture small_alien_texture
+    free_texture shelter_texture
     free_texture saucer_texture
     free_sound laser_sound
     free_sound alien_explosion_sound
@@ -382,7 +403,7 @@ main:
 ;   rcx = texture
 ;   edx = width
 ;   r8d = row index
-create_aliens_func:
+create_aliens_row_func:
     sub rsp, 40
 
     mov r9d, edx ; save edx
@@ -521,6 +542,8 @@ medium_alien_texture_file:
     db "res/medium_alien.png", 0
 small_alien_texture_file:
     db "res/small_alien.png", 0
+shelter_texture_file:
+    db "res/shelter.png", 0
 saucer_texture_file:
     db "res/saucer.png", 0
 laser_sound_file:
@@ -547,6 +570,8 @@ medium_alien_texture:
     resq 1
 small_alien_texture:
     resq 1
+shelter_texture:
+    resq 1
 saucer_texture:
     resq 1
 laser_sound:
@@ -559,6 +584,8 @@ laser:
     resb entity_size
 aliens:
     resq entity_size * aliens_count
+shelters:
+    resq entity_size * shelter_count
 event:
     resb SDL_Event_size
 keyboard_state:
