@@ -297,18 +297,18 @@ main:
     mov byte [laser + entity.alive], 1
 .space_key_end:
 
-    ; update laser
     cmp byte [laser + entity.alive], 0
-    je .update_laser_end
+    je .check_collision_end
+
+    ; update laser
     sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
     cmp dword [laser + entity.dstrect + SDL_Rect.y], -laser_height
     jg .update_laser_end
     mov byte [laser + entity.alive], 0
+    jmp .check_collision_end
 .update_laser_end:
 
     ; check for collision
-    cmp byte [laser + entity.alive], 0
-    je .check_collision_end
     mov rsi, aliens
     mov bl, aliens_count
 .check_collision:
