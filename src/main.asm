@@ -13,6 +13,9 @@ cannon_height: equ 8
 laser_height: equ 4
 laser_speed: equ 4
 
+laser_explosion_width: equ 8
+laser_explosion_height: equ 8
+
 small_alien_width: equ 8
 medium_alien_width: equ 11
 large_alien_width: equ 12
@@ -212,6 +215,7 @@ main:
     load_texture space_texture_file, space_texture
     load_texture cannon_texture_file, cannon_texture
     load_texture laser_texture_file, laser_texture
+    load_texture laser_explosion_texture_file, laser_explosion_texture
     load_texture large_alien_texture_file, large_alien_texture
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
@@ -236,6 +240,13 @@ main:
     set_entity_dstrect laser, 0, 0, 1, laser_height
     mov byte [laser + entity.alive], false
     mov byte [laser + entity.lifetime], infinite
+
+    ; create laser explosion
+    set_entity_texture laser_explosion, laser_explosion_texture
+    set_entity_srcrect laser_explosion, 0, 0, laser_explosion_width, laser_explosion_height
+    set_entity_dstrect laser_explosion, 0, 0, laser_explosion_width, laser_explosion_height
+    mov byte [laser_explosion + entity.alive], false
+    mov byte [laser_explosion + entity.lifetime], 0
 
     ; create aliens
     create_aliens_row large_alien_texture, large_alien_width, 0
@@ -331,6 +342,11 @@ main:
     cmp dword [laser + entity.dstrect + SDL_Rect.y], -laser_height
     jg .update_laser_end
     mov byte [laser + entity.alive], false
+    mov eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    sub eax, laser_explosion_width / 2
+    mov dword [laser_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov byte [laser_explosion + entity.alive], true
+    mov byte [laser_explosion + entity.lifetime], 30
     jmp .check_laser_collision_end
 .update_laser_end:
 
@@ -361,6 +377,7 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
+    render_entity laser_explosion
     render_entity alien_explosion
 
     ; render aliens
@@ -403,6 +420,7 @@ main:
     free_texture space_texture
     free_texture cannon_texture
     free_texture laser_texture
+    free_texture laser_explosion_texture
     free_texture large_alien_texture
     free_texture medium_alien_texture
     free_texture small_alien_texture
@@ -609,6 +627,8 @@ cannon_texture_file:
     db "res/cannon.png", 0
 laser_texture_file:
     db "res/laser.png", 0
+laser_explosion_texture_file:
+    db "res/laser_explosion.png", 0
 large_alien_texture_file:
     db "res/large_alien.png", 0
 medium_alien_texture_file:
@@ -639,6 +659,8 @@ cannon_texture:
     resq 1
 laser_texture:
     resq 1
+laser_explosion_texture:
+    resq 1
 large_alien_texture:
     resq 1
 medium_alien_texture:
@@ -658,6 +680,8 @@ alien_explosion_sound:
 cannon:
     resb entity_size
 laser:
+    resb entity_size
+laser_explosion:
     resb entity_size
 aliens:
     resq entity_size * aliens_count
