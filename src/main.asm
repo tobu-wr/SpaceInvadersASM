@@ -339,8 +339,8 @@ main:
 
     ; update laser
     sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
-    cmp dword [laser + entity.dstrect + SDL_Rect.y], -laser_height
-    jg .update_laser_end
+    cmp dword [laser + entity.dstrect + SDL_Rect.y], 0
+    jge .update_laser_end
     mov byte [laser + entity.alive], false
     mov eax, dword [laser + entity.dstrect + SDL_Rect.x]
     sub eax, laser_explosion_width / 2
