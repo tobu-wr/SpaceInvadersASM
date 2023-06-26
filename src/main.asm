@@ -38,7 +38,7 @@ struc entity
     .srcrect: resb SDL_Rect_size
     .dstrect: resb SDL_Rect_size
     .alive: resb 1
-    .lifetime: resb 1
+    .lifetime: resb 1 ; remaining frames
 endstruc
 
 %macro check_laser_collision 2
@@ -495,6 +495,16 @@ render_entity_func:
     sub rsp, 40
     cmp byte [rcx + entity.alive], false
     je .end
+    cmp byte [rcx + entity.lifetime], infinite
+    je .render
+    cmp byte [rcx + entity.lifetime], 0
+    je .end
+    dec byte [rcx + entity.lifetime]
+    cmp byte [rcx + entity.lifetime], 0
+    jne .render
+    mov byte [rcx + entity.alive], false
+    jmp .end
+.render:
     mov rax, rcx
     render_texture rax + entity.texture, rax + entity.srcrect, rax + entity.dstrect
 .end:
