@@ -21,6 +21,9 @@ aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
 
+alien_explosion_width: equ 13
+alien_explosion_height: equ 7
+
 shelter_width: equ 22
 shelter_height: equ 16
 shelters_count: equ 4
@@ -30,6 +33,7 @@ struc entity
     .srcrect: resb SDL_Rect_size
     .dstrect: resb SDL_Rect_size
     .alive: resb 1
+    .timer: resb 1
 endstruc
 
 %macro check_laser_collision 2
@@ -219,12 +223,14 @@ main:
     set_entity_srcrect cannon, 0, 0, cannon_width, cannon_height
     set_entity_dstrect cannon, 0, cannon_y, cannon_width, cannon_height
     mov byte [cannon + entity.alive], 1
+    mov byte [cannon + entity.timer], -1
 
     ; create laser
     set_entity_texture laser, laser_texture
     set_entity_srcrect laser, 0, 0, 1, laser_height
     set_entity_dstrect laser, 0, 0, 1, laser_height
     mov byte [laser + entity.alive], 0
+    mov byte [cannon + entity.timer], -1
 
     ; create aliens
     create_aliens_row large_alien_texture, large_alien_width, 0
@@ -232,6 +238,13 @@ main:
     create_aliens_row medium_alien_texture, medium_alien_width, 2
     create_aliens_row medium_alien_texture, medium_alien_width, 3
     create_aliens_row small_alien_texture, small_alien_width, 4
+
+    ; create alien explosion
+    set_entity_texture alien_explosion, alien_explosion_texture
+    set_entity_srcrect alien_explosion, 0, 0, alien_explosion_width, alien_explosion_height
+    set_entity_dstrect alien_explosion, 0, 0, alien_explosion_width, alien_explosion_height
+    mov byte [alien_explosion + entity.alive], 0
+    mov byte [alien_explosion + entity.timer], 0
 
     ; create shelters
     mov rcx, shelters
@@ -242,6 +255,7 @@ main:
     set_entity_srcrect rcx, 0, 0, shelter_width, shelter_height
     set_entity_dstrect rcx, r8d, 192, shelter_width, shelter_height
     mov byte [rcx + entity.alive], 1
+    mov byte [rcx + entity.timer], -1
     add rcx, entity_size
     add r8d, shelter_width + 23
     dec dl
@@ -321,6 +335,12 @@ main:
     test rax, rax
     je .check_laser_collision_end
     mov byte [rax + entity.alive], 0
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.x]
+    mov dword [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.y]
+    mov dword [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
+    mov byte [alien_explosion + entity.alive], 1
+    mov byte [alien_explosion + entity.timer], 60
     play_sound alien_explosion_sound
 .check_laser_collision_end:
 
@@ -330,6 +350,7 @@ main:
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
+    render_entity alien_explosion
 
     ; render aliens
     mov rsi, aliens
@@ -456,6 +477,7 @@ create_aliens_row_func:
     set_entity_srcrect r10, 0, 0, edx, alien_height
     set_entity_dstrect r10, r9d, r8d, edx, alien_height
     mov byte [r10 + entity.alive], 1
+    mov byte [r10 + entity.timer], -1
     add r10, entity_size
     add r9d, 16
     dec r11b
@@ -618,6 +640,8 @@ laser:
     resb entity_size
 aliens:
     resq entity_size * aliens_count
+alien_explosion:
+    resq entity_size
 shelters:
     resq entity_size * shelters_count
 event:
