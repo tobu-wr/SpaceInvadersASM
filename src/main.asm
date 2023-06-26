@@ -206,6 +206,7 @@ main:
     load_texture large_alien_texture_file, large_alien_texture
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
+    load_texture alien_explosion_texture_file, alien_explosion_texture
     load_texture shelter_texture_file, shelter_texture
     load_texture saucer_texture_file, saucer_texture
 
@@ -373,6 +374,7 @@ main:
     free_texture large_alien_texture
     free_texture medium_alien_texture
     free_texture small_alien_texture
+    free_texture alien_explosion_texture
     free_texture shelter_texture
     free_texture saucer_texture
     free_sound laser_sound
@@ -570,6 +572,8 @@ medium_alien_texture_file:
     db "res/medium_alien.png", 0
 small_alien_texture_file:
     db "res/small_alien.png", 0
+alien_explosion_texture_file:
+    db "res/alien_explosion.png", 0
 shelter_texture_file:
     db "res/shelter.png", 0
 saucer_texture_file:
@@ -597,6 +601,8 @@ large_alien_texture:
 medium_alien_texture:
     resq 1
 small_alien_texture:
+    resq 1
+alien_explosion_texture:
     resq 1
 shelter_texture:
     resq 1
