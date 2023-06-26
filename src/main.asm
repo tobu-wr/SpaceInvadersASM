@@ -449,7 +449,7 @@ create_aliens_row_func:
     lea r8d, [eax + 56]
     
     mov edx, r9d ; restore width
-    mov r9d, 16
+    mov r9d, 24
     mov r11b, aliens_column_count
 .loop:
     set_entity_texture r10, rcx
