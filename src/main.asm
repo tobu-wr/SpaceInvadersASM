@@ -33,8 +33,8 @@ struc entity
 endstruc
 
 %macro check_laser_collision 2
-    mov rcx, %1
-    mov dl, %2
+    mov rcx, %1 ; entities
+    mov dl, %2 ; count
     call check_laser_collision_func
 %endmacro
 
@@ -398,7 +398,7 @@ main:
 
 ; inputs:
 ;   rcx = entities
-;   dl = entities count
+;   dl = count
 ; output: rax = collided entity
 check_laser_collision_func:
 .loop:
