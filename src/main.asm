@@ -340,12 +340,18 @@ main:
     test rax, rax
     je .check_laser_collision_end
     mov byte [rax + entity.alive], false
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.x]
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.w]
+    sub ecx, alien_explosion_width
+    sar ecx, 1
+    add ecx, dword [rax + entity.dstrect + SDL_Rect.x]
     mov dword [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.y]
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.h]
+    sub ecx, alien_explosion_height
+    sar ecx, 1
+    add ecx, dword [rax + entity.dstrect + SDL_Rect.y]
     mov dword [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_explosion + entity.alive], true
-    mov byte [alien_explosion + entity.lifetime], 60
+    mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
 .check_laser_collision_end:
 
