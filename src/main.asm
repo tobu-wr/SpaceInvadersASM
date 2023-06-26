@@ -226,11 +226,11 @@ main:
     mov byte [laser + entity.alive], 0
 
     ; create aliens
-    create_aliens_row small_alien_texture, small_alien_width, 0
-    create_aliens_row medium_alien_texture, medium_alien_width, 1
+    create_aliens_row large_alien_texture, large_alien_width, 0
+    create_aliens_row large_alien_texture, large_alien_width, 1
     create_aliens_row medium_alien_texture, medium_alien_width, 2
-    create_aliens_row large_alien_texture, large_alien_width, 3
-    create_aliens_row large_alien_texture, large_alien_width, 4
+    create_aliens_row medium_alien_texture, medium_alien_width, 3
+    create_aliens_row small_alien_texture, small_alien_width, 4
 
     ; create shelters
     mov rcx, shelters
@@ -399,7 +399,8 @@ main:
 ; inputs:
 ;   rcx = entities
 ;   dl = count
-; output: rax = collided entity
+; output:
+;   rax = collided entity
 check_laser_collision_func:
 .loop:
     cmp byte [rcx + entity.alive], 0
@@ -430,19 +431,22 @@ check_laser_collision_func:
 ;   r8d = row index
 create_aliens_row_func:
     sub rsp, 40
-
-    mov r9d, edx ; save edx
+    mov r9d, edx ; save width
     
+    ; compute alien offset
     mov rax, entity_size * aliens_column_count
     mul r8d
-    lea r10, [rax + aliens]
+    lea r10, [aliens + rax]
 
+    ; compute y offset
+    mov eax, aliens_row_count - 1
+    sub eax, r8d
+    mov r8d, eax
     mov eax, 16
     mul r8d
     lea r8d, [eax + 56]
     
-    mov edx, r9d ; restore edx
-
+    mov edx, r9d ; restore width
     mov r9d, 16
     mov r11b, aliens_column_count
 .loop:
@@ -454,7 +458,6 @@ create_aliens_row_func:
     add r9d, 16
     dec r11b
     jnz .loop
-
     add rsp, 40
     ret
 
