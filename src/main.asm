@@ -340,43 +340,6 @@ main:
     play_sound laser_sound
 .space_key_end:
 
-    cmp byte [laser + entity.alive], false
-    je .check_laser_collision_end
-
-    ; update laser
-    sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
-    cmp dword [laser + entity.dstrect + SDL_Rect.y], 0
-    jge .update_laser_end
-    mov byte [laser + entity.alive], false
-    mov eax, dword [laser + entity.dstrect + SDL_Rect.x]
-    sub eax, laser_explosion_width / 2
-    mov dword [laser_explosion + entity.dstrect + SDL_Rect.x], eax
-    mov byte [laser_explosion + entity.alive], true
-    mov byte [laser_explosion + entity.lifetime], 30
-    jmp .check_laser_collision_end
-.update_laser_end:
-
-    ; check for collision
-    check_laser_collision shelters, shelters_count
-    check_laser_collision aliens, aliens_count
-    test rax, rax
-    je .check_laser_collision_end
-    mov byte [rax + entity.alive], false
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.w]
-    sub ecx, alien_explosion_width
-    sar ecx, 1
-    add ecx, dword [rax + entity.dstrect + SDL_Rect.x]
-    mov dword [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.h]
-    sub ecx, alien_explosion_height
-    sar ecx, 1
-    add ecx, dword [rax + entity.dstrect + SDL_Rect.y]
-    mov dword [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
-    mov byte [alien_explosion + entity.alive], true
-    mov byte [alien_explosion + entity.lifetime], 30
-    play_sound alien_explosion_sound
-.check_laser_collision_end:
-
     ; get current alien
     ; todo
     add qword [current_alien], entity_size
@@ -398,6 +361,45 @@ main:
 
     ; animate current alien
     ; todo
+
+    cmp byte [laser + entity.alive], false
+    je .check_laser_collision_end
+
+    ; update laser
+    sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
+    cmp dword [laser + entity.dstrect + SDL_Rect.y], 0
+    jge .update_laser_end
+    mov byte [laser + entity.alive], false
+    mov eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    sub eax, laser_explosion_width / 2
+    mov dword [laser_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov byte [laser_explosion + entity.alive], true
+    mov byte [laser_explosion + entity.lifetime], 30
+    jmp .check_laser_collision_end
+.update_laser_end:
+
+    ; check for collision with shelters
+    check_laser_collision shelters, shelters_count
+
+    ; check for collision with aliens
+    check_laser_collision aliens, aliens_count
+    test rax, rax
+    je .check_laser_collision_end
+    mov byte [rax + entity.alive], false
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.w]
+    sub ecx, alien_explosion_width
+    sar ecx, 1
+    add ecx, dword [rax + entity.dstrect + SDL_Rect.x]
+    mov dword [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, dword [rax + entity.dstrect + SDL_Rect.h]
+    sub ecx, alien_explosion_height
+    sar ecx, 1
+    add ecx, dword [rax + entity.dstrect + SDL_Rect.y]
+    mov dword [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
+    mov byte [alien_explosion + entity.alive], true
+    mov byte [alien_explosion + entity.lifetime], 30
+    play_sound alien_explosion_sound
+.check_laser_collision_end:
 
     render_texture space_texture, 0, 0
     render_entity cannon
