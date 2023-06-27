@@ -20,6 +20,7 @@ small_alien_width: equ 8
 medium_alien_width: equ 11
 large_alien_width: equ 12
 alien_height: equ 8
+alien_speed: equ 2
 aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
@@ -340,26 +341,28 @@ main:
     play_sound laser_sound
 .space_key_end:
 
-    ; get current alien
-    ; todo
-    add qword [current_alien], entity_size
-    cmp qword [current_alien], aliens + aliens_count * entity_size
-    jne .get_current_alien_end
-    mov qword [current_alien], aliens
-.get_current_alien_end:
+    ; get alien
     mov rax, [current_alien]
+.get_alien:
+    add rax, entity_size
+    cmp rax, aliens + aliens_count * entity_size
+    jne .check_alien
+    mov rax, aliens
+.check_alien:
+    cmp byte [rax + entity.alive], 0
+    je .get_alien
+    mov [current_alien], rax
 
-    ; move current alien
-    ; todo
-    cmp byte [alien_move_direction], right
-    je .move_current_alien_right
-    sub dword [rax + entity.dstrect + SDL_Rect.x], 2
-    jmp .move_current_alien_end
-.move_current_alien_right:
-    add dword [rax + entity.dstrect + SDL_Rect.x], 2
-.move_current_alien_end:
+    ; move alien
+    cmp byte [aliens_moving_direction], right
+    je .move_alien_right
+    sub dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
+    jmp .move_alien_end
+.move_alien_right:
+    add dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
+.move_alien_end:
 
-    ; animate current alien
+    ; animate alien
     ; todo
 
     cmp byte [laser + entity.alive], false
@@ -678,7 +681,7 @@ alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
 space_key_state:
     db 0
-alien_move_direction:
+aliens_moving_direction:
     db right
 
 section .bss
