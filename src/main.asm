@@ -365,9 +365,6 @@ main:
     add dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
 .move_alien_end:
 
-    ; animate alien
-    ; todo
-
     cmp byte [laser + entity.alive], false
     je .check_laser_collision_end
 
@@ -406,6 +403,17 @@ main:
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
 .check_laser_collision_end:
+
+    ; animate alien
+    mov rax, [current_alien]
+    mov ecx, dword [rax + entity.srcrect + SDL_Rect.w]
+    cmp ecx, dword [rax + entity.srcrect + SDL_Rect.x]
+    je .animate_alien_reset
+    mov dword [rax + entity.srcrect + SDL_Rect.x], ecx
+    jmp .animate_alien_end
+.animate_alien_reset:
+    mov dword [rax + entity.srcrect + SDL_Rect.x], 0
+.animate_alien_end:
 
     render_texture space_texture, 0, 0
     render_entity cannon
