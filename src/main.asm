@@ -488,6 +488,10 @@ check_laser_collision_func:
     add eax, dword [rcx + entity.dstrect + SDL_Rect.w]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
     jbe .next
+    mov eax, dword [laser + entity.dstrect + SDL_Rect.y]
+    add eax, laser_height
+    cmp eax, dword [rcx + entity.dstrect + SDL_Rect.y]
+    jbe .next
     mov eax, dword [rcx + entity.dstrect + SDL_Rect.y]
     add eax, dword [rcx + entity.dstrect + SDL_Rect.h]
     cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
