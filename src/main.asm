@@ -366,7 +366,7 @@ main:
 .move_alien_end:
 
     cmp byte [laser + entity.alive], false
-    je .handle_laser_collision_end
+    je .handle_laser_end
 
     ; move laser
     sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
@@ -378,18 +378,18 @@ main:
     mov dword [laser_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [laser_explosion + entity.alive], true
     mov byte [laser_explosion + entity.lifetime], 30
-    jmp .handle_laser_collision_end
+    jmp .handle_laser_end
 .move_laser_end:
 
     ; handle laser collision with shelters
     check_laser_collision shelters, shelters_count
     test rax, rax
-    jne .handle_laser_collision_end
+    jne .handle_laser_end
 
     ; handle laser collision with aliens
     check_laser_collision aliens, aliens_count
     test rax, rax
-    je .handle_laser_collision_end
+    je .handle_laser_end
     mov byte [rax + entity.alive], false
     mov ecx, dword [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_explosion_width
@@ -405,7 +405,7 @@ main:
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
 
-.handle_laser_collision_end:
+.handle_laser_end:
 
     ; animate alien
     mov rax, [current_alien]
