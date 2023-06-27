@@ -36,6 +36,9 @@ false: equ 0
 
 infinite: equ -1
 
+right: equ 1
+left: equ 0
+
 struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
@@ -286,6 +289,9 @@ main:
     call SDL_GetTicks
     mov [ticks], eax
 
+    ; init current alien
+    mov qword [current_alien], aliens - entity_size
+
 .game_loop:
 
     ; poll events
@@ -371,7 +377,26 @@ main:
     play_sound alien_explosion_sound
 .check_laser_collision_end:
 
-    ; update aliens
+    ; get current alien
+    ; todo
+    add qword [current_alien], entity_size
+    cmp qword [current_alien], aliens + aliens_count * entity_size
+    jne .get_current_alien_end
+    mov qword [current_alien], aliens
+.get_current_alien_end:
+    mov rax, [current_alien]
+
+    ; move current alien
+    ; todo
+    cmp byte [alien_move_direction], right
+    je .move_current_alien_right
+    sub dword [rax + entity.dstrect + SDL_Rect.x], 2
+    jmp .move_current_alien_end
+.move_current_alien_right:
+    add dword [rax + entity.dstrect + SDL_Rect.x], 2
+.move_current_alien_end:
+
+    ; animate current alien
     ; todo
 
     render_texture space_texture, 0, 0
@@ -647,6 +672,8 @@ alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
 space_key_state:
     db 0
+alien_move_direction:
+    db right
 
 section .bss
 window:
@@ -695,3 +722,5 @@ keyboard_state:
     resq 1
 ticks:
     resd 1
+current_alien:
+    resq 1
