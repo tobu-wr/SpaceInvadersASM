@@ -341,15 +341,18 @@ main:
     play_sound laser_sound
 .space_key_end:
 
+    ; update aliens moving direction if necessary
+    ; todo
+
     ; get alien
     mov rax, [current_alien]
 .get_alien:
     add rax, entity_size
     cmp rax, aliens + aliens_count * entity_size
-    jne .check_alien
+    jne .get_alien_check_alive
     mov rax, aliens
-.check_alien:
-    cmp byte [rax + entity.alive], 0
+.get_alien_check_alive:
+    cmp byte [rax + entity.alive], false
     je .get_alien
     mov [current_alien], rax
 
