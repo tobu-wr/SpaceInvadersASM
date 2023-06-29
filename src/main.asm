@@ -341,20 +341,56 @@ main:
     play_sound laser_sound
 .space_key_end:
 
-    ; update aliens moving direction if necessary
-    ; todo
-
     ; get alien
-    mov rax, [current_alien]
 .get_alien:
+    mov rax, [current_alien]
+.get_alien_loop:
     add rax, entity_size
     cmp rax, aliens + aliens_count * entity_size
-    jne .get_alien_check_alive
-    mov rax, aliens
-.get_alien_check_alive:
+    jne .get_alien_loop_check
+    mov qword [current_alien], aliens - entity_size
+    jmp .check_aliens
+.get_alien_loop_check:
     cmp byte [rax + entity.alive], false
-    je .get_alien
+    je .get_alien_loop
     mov [current_alien], rax
+    jmp .check_aliens_end
+
+    ; check aliens to update moving direction and vertical position if necessary
+.check_aliens:
+    mov rax, aliens
+    mov cl, aliens_count
+    cmp byte [aliens_moving_direction], right
+    je .check_aliens_right
+.check_aliens_left:
+    cmp byte [rax + entity.alive], false
+    je .check_aliens_left_next
+    cmp dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
+    jae .check_aliens_left_next
+    mov byte [aliens_moving_direction], right
+    ;call tbd
+    jmp .get_alien
+.check_aliens_left_next:
+    add rax, entity_size
+    dec cl
+    jnz .check_aliens_left
+    jmp .get_alien
+.check_aliens_right:
+    cmp byte [rax + entity.alive], false
+    je .check_aliens_right_next
+    mov edx, dword [rax + entity.dstrect + SDL_Rect.x]
+    add edx, dword [rax + entity.dstrect + SDL_Rect.w]
+    cmp edx, screen_width - alien_speed
+    jbe .check_aliens_right_next
+    mov byte [aliens_moving_direction], left
+    ;call tbd
+    jmp .get_alien
+.check_aliens_right_next:
+    add rax, entity_size
+    dec cl
+    jnz .check_aliens_right
+    jmp .get_alien
+.check_aliens_end:
 
     ; move alien
     cmp byte [aliens_moving_direction], right
