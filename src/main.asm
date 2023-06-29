@@ -310,36 +310,36 @@ main:
 
     ; handle right key
     cmp byte [rax + SDL_SCANCODE_RIGHT], 0
-    je .right_key_end
+    je .handle_right_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], screen_width - cannon_width
-    je .right_key_end
+    je .handle_right_key_end
     inc dword [cannon + entity.dstrect + SDL_Rect.x]
-.right_key_end:
+.handle_right_key_end:
 
     ; handle left key
     cmp byte [rax + SDL_SCANCODE_LEFT], 0
-    je .left_key_end
+    je .handle_left_key_end
     cmp dword [cannon + entity.dstrect + SDL_Rect.x], 0
-    je .left_key_end
+    je .handle_left_key_end
     dec dword [cannon + entity.dstrect + SDL_Rect.x]
-.left_key_end:
+.handle_left_key_end:
 
     ; handle space key
     mov al, [rax + SDL_SCANCODE_SPACE]
     cmp al, [space_key_state]
-    je .space_key_end
+    je .handle_space_key_end
     mov [space_key_state], al
     test al, al
-    je .space_key_end
+    je .handle_space_key_end
     cmp byte [laser + entity.alive], true
-    je .space_key_end
+    je .handle_space_key_end
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     add eax, cannon_width / 2
     mov [laser + entity.dstrect + SDL_Rect.x], eax
     mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height + laser_speed
     mov byte [laser + entity.alive], true
     play_sound laser_sound
-.space_key_end:
+.handle_space_key_end:
 
     ; get alien
 .get_alien:
@@ -369,8 +369,8 @@ main:
 .check_aliens_right:
     cmp byte [rax + entity.alive], false
     je .check_aliens_right_next
-    mov edx, dword [rax + entity.dstrect + SDL_Rect.x]
-    add edx, dword [rax + entity.dstrect + SDL_Rect.w]
+    mov edx, [rax + entity.dstrect + SDL_Rect.x]
+    add edx, [rax + entity.dstrect + SDL_Rect.w]
     cmp edx, screen_width - alien_speed
     jbe .check_aliens_right_next
     mov byte [aliens_moving_direction], left
@@ -403,9 +403,9 @@ main:
     cmp dword [laser + entity.dstrect + SDL_Rect.y], 0
     jge .move_laser_end
     mov byte [laser + entity.alive], false
-    mov eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    mov eax, [laser + entity.dstrect + SDL_Rect.x]
     sub eax, laser_explosion_width / 2
-    mov dword [laser_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov [laser_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [laser_explosion + entity.alive], true
     mov byte [laser_explosion + entity.lifetime], 30
     jmp .handle_laser_end
@@ -421,16 +421,16 @@ main:
     test rax, rax
     je .handle_laser_end
     mov byte [rax + entity.alive], false
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.w]
+    mov ecx, [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_explosion_width
     sar ecx, 1
-    add ecx, dword [rax + entity.dstrect + SDL_Rect.x]
-    mov dword [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, dword [rax + entity.dstrect + SDL_Rect.h]
+    add ecx, [rax + entity.dstrect + SDL_Rect.x]
+    mov [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, [rax + entity.dstrect + SDL_Rect.h]
     sub ecx, alien_explosion_height
     sar ecx, 1
-    add ecx, dword [rax + entity.dstrect + SDL_Rect.y]
-    mov dword [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
+    add ecx, [rax + entity.dstrect + SDL_Rect.y]
+    mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
@@ -439,10 +439,10 @@ main:
 
     ; animate alien
     mov rax, [current_alien]
-    mov ecx, dword [rax + entity.srcrect + SDL_Rect.w]
-    cmp ecx, dword [rax + entity.srcrect + SDL_Rect.x]
+    mov ecx, [rax + entity.srcrect + SDL_Rect.w]
+    cmp ecx, [rax + entity.srcrect + SDL_Rect.x]
     je .animate_alien_reset
-    mov dword [rax + entity.srcrect + SDL_Rect.x], ecx
+    mov [rax + entity.srcrect + SDL_Rect.x], ecx
     jmp .animate_alien_end
 .animate_alien_reset:
     mov dword [rax + entity.srcrect + SDL_Rect.x], 0
@@ -531,19 +531,19 @@ check_laser_collision_func:
 .loop:
     cmp byte [rcx + entity.alive], false
     je .next
-    mov eax, dword [rcx + entity.dstrect + SDL_Rect.x]
-    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    mov eax, [rcx + entity.dstrect + SDL_Rect.x]
+    cmp eax, [laser + entity.dstrect + SDL_Rect.x]
     ja .next
-    add eax, dword [rcx + entity.dstrect + SDL_Rect.w]
-    cmp eax, dword [laser + entity.dstrect + SDL_Rect.x]
+    add eax, [rcx + entity.dstrect + SDL_Rect.w]
+    cmp eax, [laser + entity.dstrect + SDL_Rect.x]
     jbe .next
-    mov eax, dword [laser + entity.dstrect + SDL_Rect.y]
+    mov eax, [laser + entity.dstrect + SDL_Rect.y]
     add eax, laser_height
-    cmp eax, dword [rcx + entity.dstrect + SDL_Rect.y]
+    cmp eax, [rcx + entity.dstrect + SDL_Rect.y]
     jbe .next
-    mov eax, dword [rcx + entity.dstrect + SDL_Rect.y]
-    add eax, dword [rcx + entity.dstrect + SDL_Rect.h]
-    cmp eax, dword [laser + entity.dstrect + SDL_Rect.y]
+    mov eax, [rcx + entity.dstrect + SDL_Rect.y]
+    add eax, [rcx + entity.dstrect + SDL_Rect.h]
+    cmp eax, [laser + entity.dstrect + SDL_Rect.y]
     jbe .next
     mov byte [laser + entity.alive], false
     mov rax, rcx
