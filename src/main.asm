@@ -349,15 +349,6 @@ main:
     cmp rax, aliens + aliens_count * entity_size
     jne .get_alien_loop_check
     mov qword [current_alien], aliens - entity_size
-    jmp .check_aliens
-.get_alien_loop_check:
-    cmp byte [rax + entity.alive], false
-    je .get_alien_loop
-    mov [current_alien], rax
-    jmp .check_aliens_end
-
-    ; check aliens to update moving direction and vertical position if necessary
-.check_aliens:
     mov rax, aliens
     mov cl, aliens_count
     cmp byte [aliens_moving_direction], right
@@ -368,7 +359,7 @@ main:
     cmp dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
     jae .check_aliens_left_next
     mov byte [aliens_moving_direction], right
-    ;call tbd
+    call move_aliens_down
     jmp .get_alien
 .check_aliens_left_next:
     add rax, entity_size
@@ -383,14 +374,17 @@ main:
     cmp edx, screen_width - alien_speed
     jbe .check_aliens_right_next
     mov byte [aliens_moving_direction], left
-    ;call tbd
+    call move_aliens_down
     jmp .get_alien
 .check_aliens_right_next:
     add rax, entity_size
     dec cl
     jnz .check_aliens_right
     jmp .get_alien
-.check_aliens_end:
+.get_alien_loop_check:
+    cmp byte [rax + entity.alive], false
+    je .get_alien_loop
+    mov [current_alien], rax
 
     ; move alien
     cmp byte [aliens_moving_direction], right
@@ -559,6 +553,19 @@ check_laser_collision_func:
     dec dl
     jnz .loop
     xor rax, rax
+    ret
+
+move_aliens_down:
+    mov rax, aliens
+    mov cl, aliens_count
+.loop:
+    cmp byte [rax + entity.alive], false
+    je .next
+    add dword [rax + entity.dstrect + SDL_Rect.y], 8
+.next:
+    add rax, entity_size
+    dec cl
+    jnz .loop
     ret
 
 ; inputs:
