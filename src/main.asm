@@ -38,7 +38,7 @@ shelters_count: equ 4
 
 saucer_width: equ 16
 saucer_height: equ 7
-saucer_timer_reset_value: equ 1
+saucer_spawn_timer_reset_value: equ 1
 saucer_moving_timer_reset_value: equ 2
 
 true: equ 1
@@ -452,7 +452,7 @@ main:
 
     cmp byte [saucer + entity.alive], true
     je .move_saucer
-    dec word [saucer_timer]
+    dec word [saucer_spawn_timer]
     jnz .move_saucer_end
     mov byte [saucer + entity.dstrect + SDL_Rect.x], 0
     mov byte [saucer + entity.alive], true
@@ -466,7 +466,7 @@ main:
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], screen_width
     jb .move_saucer_end
     mov byte [saucer + entity.alive], false
-    mov word [saucer_timer], saucer_timer_reset_value
+    mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
 .move_saucer_end:
 
 ; ---------------------------------------------------------------------
@@ -836,8 +836,8 @@ current_alien:
     dq aliens - entity_size
 aliens_moving_direction:
     db right
-saucer_timer:
-    dw saucer_timer_reset_value
+saucer_spawn_timer:
+    dw saucer_spawn_timer_reset_value
 saucer_moving_timer:
     db saucer_moving_timer_reset_value
 saucer_moving_direction:
