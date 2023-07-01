@@ -2,6 +2,10 @@
 
 extern puts, printf
 
+; ---------------------------------------------------------------------
+;   CONSTANTS
+; ---------------------------------------------------------------------
+
 screen_width: equ 224
 screen_height: equ 256
 scale: equ 2
@@ -45,6 +49,10 @@ infinite: equ -1
 right: equ 1
 left: equ 0
 
+; ---------------------------------------------------------------------
+;   STRUCTURES
+; ---------------------------------------------------------------------
+
 struc entity
     .texture: resq 1
     .srcrect: resb SDL_Rect_size
@@ -52,6 +60,10 @@ struc entity
     .alive: resb 1
     .lifetime: resb 1 ; remaining frames
 endstruc
+
+; ---------------------------------------------------------------------
+;   MACROS
+; ---------------------------------------------------------------------
 
 %macro check_laser_collision 2
     mov rcx, %1 ; entities
@@ -127,12 +139,20 @@ endstruc
     call Mix_FreeChunk
 %endmacro
 
+; ---------------------------------------------------------------------
+;   MAIN START
+; ---------------------------------------------------------------------
+
 section .text
 global main
 main:
     push rsi
     push rbx
     sub rsp, 56
+
+; ---------------------------------------------------------------------
+;   INITIALIZATION
+; ---------------------------------------------------------------------
 
     ; init SDL
     mov ecx, SDL_INIT_VIDEO | SDL_INIT_AUDIO ; flags
@@ -302,7 +322,15 @@ main:
     call SDL_GetTicks
     mov [ticks], eax
 
+; ---------------------------------------------------------------------
+;   GAME LOOP START
+; ---------------------------------------------------------------------
+
 .game_loop:
+
+; ---------------------------------------------------------------------
+;   EVENT HANDLING
+; ---------------------------------------------------------------------
 
     ; poll events
 .poll_event:
@@ -349,6 +377,10 @@ main:
     mov byte [laser + entity.alive], true
     play_sound laser_sound
 .handle_space_key_end:
+
+; ---------------------------------------------------------------------
+;   ALIEN UPDATE
+; ---------------------------------------------------------------------
 
     ; get alien
 .get_alien:
@@ -414,7 +446,10 @@ main:
     mov dword [rax + entity.srcrect + SDL_Rect.x], 0
 .animate_alien_end:
 
-    ; update saucer
+; ---------------------------------------------------------------------
+;   SAUCER UPDATE
+; ---------------------------------------------------------------------
+
     cmp byte [saucer + entity.alive], true
     je .move_saucer
     dec word [saucer_timer]
@@ -433,6 +468,10 @@ main:
     mov byte [saucer + entity.alive], false
     mov word [saucer_timer], saucer_timer_reset_value
 .move_saucer_end:
+
+; ---------------------------------------------------------------------
+;   LASER UPDATE
+; ---------------------------------------------------------------------
 
     cmp byte [laser + entity.alive], false
     je .handle_laser_end
@@ -479,6 +518,10 @@ main:
 
 .handle_laser_end:
 
+; ---------------------------------------------------------------------
+;   RENDERING
+; ---------------------------------------------------------------------
+
     render_texture space_texture, 0, 0
     render_entity cannon
     render_entity laser
@@ -519,10 +562,17 @@ main:
     call SDL_Delay
 .delay_end:
 
+; ---------------------------------------------------------------------
+;   GAME LOOP END
+; ---------------------------------------------------------------------
+
     jmp .game_loop
 .game_loop_end:
 
-    ; cleanup
+; ---------------------------------------------------------------------
+;   CLEANUP
+; ---------------------------------------------------------------------
+
     free_texture space_texture
     free_texture cannon_texture
     free_texture laser_texture
@@ -547,12 +597,20 @@ main:
 .free_sdl:
     call SDL_Quit
 
+; ---------------------------------------------------------------------
+;   MAIN END
+; ---------------------------------------------------------------------
+
 .main_end:
     xor eax, eax
     add rsp, 56
     pop rbx
     pop rsi
     ret
+
+; ---------------------------------------------------------------------
+;   FUNCTIONS
+; ---------------------------------------------------------------------
 
 ; inputs:
 ;   rcx = entities
@@ -708,6 +766,10 @@ load_sound_func:
     mov rax, [rsp + 32]
     add rsp, 40
     ret
+
+; ---------------------------------------------------------------------
+;   DATA
+; ---------------------------------------------------------------------
 
 section .data
 init_sdl_msg_success:
