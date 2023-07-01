@@ -403,6 +403,16 @@ main:
     add dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
 .move_alien_end:
 
+    ; animate alien
+    mov ecx, [rax + entity.srcrect + SDL_Rect.w]
+    cmp ecx, [rax + entity.srcrect + SDL_Rect.x]
+    je .animate_alien_reset
+    mov [rax + entity.srcrect + SDL_Rect.x], ecx
+    jmp .animate_alien_end
+.animate_alien_reset:
+    mov dword [rax + entity.srcrect + SDL_Rect.x], 0
+.animate_alien_end:
+
     ; update saucer
     cmp byte [saucer + entity.alive], true
     je .move_saucer
@@ -464,17 +474,6 @@ main:
     ; todo
 
 .handle_laser_end:
-
-    ; animate alien
-    mov rax, [current_alien]
-    mov ecx, [rax + entity.srcrect + SDL_Rect.w]
-    cmp ecx, [rax + entity.srcrect + SDL_Rect.x]
-    je .animate_alien_reset
-    mov [rax + entity.srcrect + SDL_Rect.x], ecx
-    jmp .animate_alien_end
-.animate_alien_reset:
-    mov dword [rax + entity.srcrect + SDL_Rect.x], 0
-.animate_alien_end:
 
     render_texture space_texture, 0, 0
     render_entity cannon
