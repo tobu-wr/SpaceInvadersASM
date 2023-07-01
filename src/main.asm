@@ -309,7 +309,7 @@ main:
     ; create saucer
     set_entity_texture saucer, saucer_texture
     set_entity_srcrect saucer, 0, 0, saucer_width, saucer_height
-    set_entity_dstrect saucer, 0, 0, saucer_width, saucer_height
+    set_entity_dstrect saucer, 0, 41, saucer_width, saucer_height
     mov byte [saucer + entity.alive], false
     mov byte [saucer + entity.lifetime], infinite
 
