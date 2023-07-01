@@ -376,6 +376,10 @@ main:
     mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height + laser_speed
     mov byte [laser + entity.alive], true
     play_sound laser_sound
+    inc byte [laser_shot_number]
+    cmp byte [laser_shot_number], 16
+    jne .handle_space_key_end
+    mov byte [laser_shot_number], 0
 .handle_space_key_end:
 
 ; ---------------------------------------------------------------------
@@ -454,10 +458,20 @@ main:
     je .move_saucer
     dec word [saucer_spawn_timer]
     jnz .move_saucer_end
-    mov byte [saucer + entity.dstrect + SDL_Rect.x], 0
+
+    ; spawn saucer
     mov byte [saucer + entity.alive], true
-    ; todo
+    bt word [laser_shot_number], 0
+    jc .spawn_saucer_left
+    mov dword [saucer + entity.dstrect + SDL_Rect.x], screen_width - saucer_width
+    mov byte [saucer_moving_direction], left
     jmp .move_saucer_end
+.spawn_saucer_left:
+    mov dword [saucer + entity.dstrect + SDL_Rect.x], 0
+    mov byte [saucer_moving_direction], right
+    jmp .move_saucer_end
+
+    ; move saucer
 .move_saucer:
     dec byte [saucer_moving_timer]
     jnz .move_saucer_end
@@ -842,6 +856,8 @@ saucer_moving_timer:
     db saucer_moving_timer_reset_value
 saucer_moving_direction:
     db right
+laser_shot_number:
+    db -1
 
 section .bss
 window:
