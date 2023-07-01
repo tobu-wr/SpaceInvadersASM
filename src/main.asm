@@ -34,6 +34,7 @@ shelters_count: equ 4
 
 saucer_width: equ 16
 saucer_height: equ 7
+saucer_timer_reset_value: equ 300
 
 true: equ 1
 false: equ 0
@@ -402,6 +403,23 @@ main:
     add dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
 .move_alien_end:
 
+    ; update saucer
+    cmp byte [saucer + entity.alive], true
+    je .move_saucer
+    dec word [saucer_timer]
+    jnz .move_saucer_end
+    mov byte [saucer + entity.dstrect + SDL_Rect.x], 0
+    mov byte [saucer + entity.alive], true
+    ; todo
+    jmp .move_saucer_end
+.move_saucer:
+    inc dword [saucer + entity.dstrect + SDL_Rect.x]
+    cmp dword [saucer + entity.dstrect + SDL_Rect.x], screen_width
+    jb .move_saucer_end
+    mov byte [saucer + entity.alive], false
+    mov word [saucer_timer], saucer_timer_reset_value
+.move_saucer_end:
+
     cmp byte [laser + entity.alive], false
     je .handle_laser_end
 
@@ -441,6 +459,9 @@ main:
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
+
+    ; handle laser collision with saucer
+    ; todo
 
 .handle_laser_end:
 
@@ -749,6 +770,10 @@ space_key_state:
 current_alien:
     dq aliens - entity_size
 aliens_moving_direction:
+    db right
+saucer_timer:
+    dw saucer_timer_reset_value
+saucer_moving_direction:
     db right
 
 section .bss
