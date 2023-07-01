@@ -32,6 +32,9 @@ shelter_width: equ 22
 shelter_height: equ 16
 shelters_count: equ 4
 
+saucer_width: equ 16
+saucer_height: equ 7
+
 true: equ 1
 false: equ 0
 
@@ -281,6 +284,13 @@ main:
     dec dl
     jnz .create_shelter
 
+    ; create saucer
+    set_entity_texture saucer, saucer_texture
+    set_entity_srcrect saucer, 0, 0, saucer_width, saucer_height
+    set_entity_dstrect saucer, 0, 0, saucer_width, saucer_height
+    mov byte [saucer + entity.alive], false
+    mov byte [saucer + entity.lifetime], infinite
+
     ; get keyboard state
     mov rcx, 0 ; numkeys
     call SDL_GetKeyboardState
@@ -289,9 +299,6 @@ main:
     ; init tick count
     call SDL_GetTicks
     mov [ticks], eax
-
-    ; init current alien
-    mov qword [current_alien], aliens - entity_size
 
 .game_loop:
 
@@ -453,6 +460,7 @@ main:
     render_entity laser
     render_entity laser_explosion
     render_entity alien_explosion
+    render_entity saucer
 
     ; render aliens
     mov rsi, aliens
@@ -738,6 +746,8 @@ alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
 space_key_state:
     db 0
+current_alien:
+    dq aliens - entity_size
 aliens_moving_direction:
     db right
 
@@ -782,11 +792,11 @@ alien_explosion:
     resq entity_size
 shelters:
     resq entity_size * shelters_count
+saucer:
+    resq entity_size
 event:
     resb SDL_Event_size
 keyboard_state:
     resq 1
 ticks:
     resd 1
-current_alien:
-    resq 1
