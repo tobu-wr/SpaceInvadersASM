@@ -551,9 +551,19 @@ main:
     ; handle laser collision with saucer
     check_laser_collision saucer, 1
     test rax, rax
-    je .update_laser_end
+    je .handle_laser_collision_saucer_end
     mov byte [saucer + entity.alive], false
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
+    mov ecx, (saucer_width - saucer_explosion_width) / 2
+    add ecx, [saucer + entity.dstrect + SDL_Rect.x]
+    mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, (saucer_height - saucer_explosion_height) / 2
+    add ecx, [saucer + entity.dstrect + SDL_Rect.y]
+    mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
+    mov byte [saucer_explosion + entity.alive], true
+    mov byte [saucer_explosion + entity.lifetime], 30
+    ; play_sound saucer_explosion_sound
+.handle_laser_collision_saucer_end:
 
 .update_laser_end:
 
