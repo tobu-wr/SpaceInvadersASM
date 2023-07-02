@@ -41,6 +41,9 @@ saucer_height: equ 7
 saucer_spawn_timer_reset_value: equ 1
 saucer_moving_timer_reset_value: equ 2
 
+saucer_explosion_width: equ 21
+saucer_explosion_height: equ 8
+
 true: equ 1
 false: equ 0
 
@@ -251,6 +254,7 @@ main:
     load_texture alien_explosion_texture_file, alien_explosion_texture
     load_texture shelter_texture_file, shelter_texture
     load_texture saucer_texture_file, saucer_texture
+    load_texture saucer_explosion_texture_file, saucer_explosion_texture
 
     ; load sounds
     load_sound laser_sound_file, laser_sound
@@ -312,6 +316,13 @@ main:
     set_entity_dstrect saucer, 0, 41, saucer_width, saucer_height
     mov byte [saucer + entity.alive], false
     mov byte [saucer + entity.lifetime], infinite
+
+    ; create saucer explosion
+    set_entity_texture saucer_explosion, saucer_explosion_texture
+    set_entity_srcrect saucer_explosion, 0, 0, saucer_explosion_width, saucer_explosion_height
+    set_entity_dstrect saucer_explosion, 0, 0, saucer_explosion_width, saucer_explosion_height
+    mov byte [saucer_explosion + entity.alive], false
+    mov byte [saucer_explosion + entity.lifetime], 0
 
     ; get keyboard state
     mov rcx, 0 ; numkeys
@@ -543,6 +554,7 @@ main:
     je .update_laser_end
     mov byte [saucer + entity.alive], false
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
+
 .update_laser_end:
 
 ; ---------------------------------------------------------------------
@@ -555,6 +567,7 @@ main:
     render_entity laser_explosion
     render_entity alien_explosion
     render_entity saucer
+    render_entity saucer_explosion
 
     ; render aliens
     mov rsi, aliens
@@ -610,6 +623,7 @@ main:
     free_texture alien_explosion_texture
     free_texture shelter_texture
     free_texture saucer_texture
+    free_texture saucer_explosion_texture
     free_sound laser_sound
     free_sound alien_explosion_sound
     call Mix_CloseAudio
@@ -853,6 +867,8 @@ shelter_texture_file:
     db "res/shelter.png", 0
 saucer_texture_file:
     db "res/saucer.png", 0
+saucer_explosion_texture_file:
+    db "res/saucer_explosion.png", 0
 laser_sound_file:
     db "res/laser.wav", 0
 alien_explosion_sound_file:
@@ -897,6 +913,8 @@ shelter_texture:
     resq 1
 saucer_texture:
     resq 1
+saucer_explosion_texture:
+    resq 1
 laser_sound:
     resq 1
 alien_explosion_sound:
@@ -914,6 +932,8 @@ alien_explosion:
 shelters:
     resq entity_size * shelters_count
 saucer:
+    resq entity_size
+saucer_explosion:
     resq entity_size
 event:
     resb SDL_Event_size
