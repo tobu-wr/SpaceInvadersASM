@@ -12,6 +12,7 @@
 
 ## Building
 
+1. `mkdir ext`
 1. Copy SDL2.lib, SDL2_image.lib and SDL2_mixer.lib in ext folder
 1. `make`
 
