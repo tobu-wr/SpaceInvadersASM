@@ -480,8 +480,8 @@ main:
     je .move_saucer_right
     dec dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], -saucer_width
-    je .restart_spawn_timer
-    jmp .move_saucer_end
+    jne .move_saucer_end
+    jmp .restart_spawn_timer
 .move_saucer_right:
     inc dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], screen_width
@@ -496,7 +496,7 @@ main:
 ; ---------------------------------------------------------------------
 
     cmp byte [laser + entity.alive], false
-    je .handle_laser_end
+    je .update_laser_end
 
     ; move laser
     sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
@@ -508,18 +508,18 @@ main:
     mov [laser_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [laser_explosion + entity.alive], true
     mov byte [laser_explosion + entity.lifetime], 30
-    jmp .handle_laser_end
+    jmp .update_laser_end
 .move_laser_end:
 
     ; handle laser collision with shelters
     check_laser_collision shelters, shelters_count
     test rax, rax
-    jne .handle_laser_end
+    jne .update_laser_end
 
     ; handle laser collision with aliens
     check_laser_collision aliens, aliens_count
     test rax, rax
-    je .handle_laser_end
+    je .handle_laser_collision_aliens_end
     mov byte [rax + entity.alive], false
     mov ecx, [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_explosion_width
@@ -534,11 +534,16 @@ main:
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound
+    jmp .update_laser_end
+.handle_laser_collision_aliens_end:
 
     ; handle laser collision with saucer
-    ; todo
-
-.handle_laser_end:
+    check_laser_collision saucer, 1
+    test rax, rax
+    je .update_laser_end
+    mov byte [saucer + entity.alive], false
+    mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
+.update_laser_end:
 
 ; ---------------------------------------------------------------------
 ;   RENDERING
