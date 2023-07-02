@@ -492,12 +492,12 @@ main:
     dec dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], -saucer_width
     jne .move_saucer_end
-    jmp .restart_spawn_timer
+    jmp .restart_saucer_spawn_timer
 .move_saucer_right:
     inc dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], screen_width
     jne .move_saucer_end
-.restart_spawn_timer:
+.restart_saucer_spawn_timer:
     mov byte [saucer + entity.alive], false
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
 .move_saucer_end:
