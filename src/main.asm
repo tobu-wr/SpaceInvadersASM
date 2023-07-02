@@ -38,7 +38,7 @@ shelters_count: equ 4
 
 saucer_width: equ 16
 saucer_height: equ 7
-saucer_spawn_timer_reset_value: equ 1
+saucer_spawn_timer_reset_value: equ 0x600
 saucer_moving_timer_reset_value: equ 2
 
 saucer_explosion_width: equ 21
@@ -130,10 +130,10 @@ endstruc
     mov [%2], rax ; sound
 %endmacro
 
-%macro play_sound 1
+%macro play_sound 2
     mov ecx, -1 ; channel
     mov rdx, [%1] ; sound
-    mov r8d, 0 ; loops
+    mov r8d, %2 ; loops
     call Mix_PlayChannel
 %endmacro
 
@@ -259,6 +259,7 @@ main:
     ; load sounds
     load_sound laser_sound_file, laser_sound
     load_sound alien_explosion_sound_file, alien_explosion_sound
+    load_sound saucer_sound_file, saucer_sound
     load_sound saucer_explosion_sound_file, saucer_explosion_sound
 
     ; create cannon
@@ -387,7 +388,7 @@ main:
     mov [laser + entity.dstrect + SDL_Rect.x], eax
     mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height + laser_speed
     mov byte [laser + entity.alive], true
-    play_sound laser_sound
+    play_sound laser_sound, 0
     inc byte [laser_shot_number]
     cmp byte [laser_shot_number], 16
     jne .handle_space_key_end
@@ -473,6 +474,8 @@ main:
 
     ; spawn saucer
     mov byte [saucer + entity.alive], true
+    play_sound saucer_sound, infinite
+    mov [saucer_sound_channel], eax
     bt word [laser_shot_number], 0
     jc .spawn_saucer_left
     mov dword [saucer + entity.dstrect + SDL_Rect.x], screen_width - saucer_width
@@ -500,6 +503,8 @@ main:
     jne .move_saucer_end
 .restart_saucer_spawn_timer:
     mov byte [saucer + entity.alive], false
+    mov ecx, [saucer_sound_channel]
+    call Mix_HaltChannel
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
 .move_saucer_end:
 
@@ -545,7 +550,7 @@ main:
     mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
-    play_sound alien_explosion_sound
+    play_sound alien_explosion_sound, 0
     jmp .update_laser_end
 .handle_laser_collision_aliens_end:
 
@@ -554,6 +559,8 @@ main:
     test rax, rax
     je .handle_laser_collision_saucer_end
     mov byte [saucer + entity.alive], false
+    mov ecx, [saucer_sound_channel]
+    call Mix_HaltChannel
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
     mov ecx, saucer_width / 2
     sub ecx, saucer_explosion_width / 2
@@ -565,7 +572,7 @@ main:
     mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], 30
-    play_sound saucer_explosion_sound
+    play_sound saucer_explosion_sound, 0
 .handle_laser_collision_saucer_end:
 
 .update_laser_end:
@@ -639,6 +646,7 @@ main:
     free_texture saucer_explosion_texture
     free_sound laser_sound
     free_sound alien_explosion_sound
+    free_sound saucer_sound
     free_sound saucer_explosion_sound
     call Mix_CloseAudio
 .free_sdl_image:
@@ -887,6 +895,8 @@ laser_sound_file:
     db "res/laser.wav", 0
 alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
+saucer_sound_file:
+    db "res/saucer.wav", 0
 saucer_explosion_sound_file:
     db "res/saucer_explosion.wav", 0
 space_key_state:
@@ -935,6 +945,8 @@ laser_sound:
     resq 1
 alien_explosion_sound:
     resq 1
+saucer_sound:
+    resq 1
 saucer_explosion_sound:
     resq 1
 cannon:
@@ -958,4 +970,6 @@ event:
 keyboard_state:
     resq 1
 ticks:
+    resd 1
+saucer_sound_channel:
     resd 1
