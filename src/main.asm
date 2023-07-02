@@ -259,6 +259,7 @@ main:
     ; load sounds
     load_sound laser_sound_file, laser_sound
     load_sound alien_explosion_sound_file, alien_explosion_sound
+    load_sound saucer_explosion_sound_file, saucer_explosion_sound
 
     ; create cannon
     set_entity_texture cannon, cannon_texture
@@ -554,15 +555,17 @@ main:
     je .handle_laser_collision_saucer_end
     mov byte [saucer + entity.alive], false
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
-    mov ecx, (saucer_width - saucer_explosion_width) / 2
+    mov ecx, saucer_width / 2
+    sub ecx, saucer_explosion_width / 2
     add ecx, [saucer + entity.dstrect + SDL_Rect.x]
     mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, (saucer_height - saucer_explosion_height) / 2
+    mov ecx, saucer_height / 2
+    sub ecx, saucer_explosion_height / 2
     add ecx, [saucer + entity.dstrect + SDL_Rect.y]
     mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], 30
-    ; play_sound saucer_explosion_sound
+    play_sound saucer_explosion_sound
 .handle_laser_collision_saucer_end:
 
 .update_laser_end:
@@ -636,6 +639,7 @@ main:
     free_texture saucer_explosion_texture
     free_sound laser_sound
     free_sound alien_explosion_sound
+    free_sound saucer_explosion_sound
     call Mix_CloseAudio
 .free_sdl_image:
     call IMG_Quit
@@ -883,6 +887,8 @@ laser_sound_file:
     db "res/laser.wav", 0
 alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
+saucer_explosion_sound_file:
+    db "res/saucer_explosion.wav", 0
 space_key_state:
     db 0
 current_alien:
@@ -928,6 +934,8 @@ saucer_explosion_texture:
 laser_sound:
     resq 1
 alien_explosion_sound:
+    resq 1
+saucer_explosion_sound:
     resq 1
 cannon:
     resb entity_size
