@@ -6,21 +6,21 @@
 
 - NASM
 - GCC
-- SDL2 v2.26.5
-- SDL2_image v2.6.3
-- SDL2_mixer v2.6.3
+- SDL2 2.26.5
+- SDL2_image 2.6.3
+- SDL2_mixer 2.6.3
 
 ## Building
 
-- Copy SDL2.lib, SDL2_image.lib and SDL2_mixer.lib in ext folder
-- `make`
+1. Copy SDL2.lib, SDL2_image.lib and SDL2_mixer.lib in ext folder
+1. `make`
 
 ## Running
 
-- Copy SDL2.dll, SDL2_image.dll and SDL2_mixer.dll in out folder
-- `cd out`
-- `./space_invaders.exe`
+1. Copy SDL2.dll, SDL2_image.dll and SDL2_mixer.dll in out folder
+1. `./out/space_invaders.exe`
 
 ## Controls
 
-TODO
+Press space key to fire laser shots.
+Press left or right keys to move left or right respectively.
