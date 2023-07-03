@@ -34,6 +34,7 @@ alien_explosion_height: equ 7
 
 alien_shot_width: equ 3
 alien_shot_height: equ 7
+alien_shot_animation_timer_reset_value: equ 30
 
 alien_shot_explosion_width: equ 6
 alien_shot_explosion_height: equ 8
@@ -612,6 +613,7 @@ main:
     mov rax, aliens
 
     ; spawn alien shot
+    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
     mov ecx, [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_shot_width
     sar ecx, 1
@@ -621,7 +623,8 @@ main:
     add ecx, [rax + entity.dstrect + SDL_Rect.h]
     mov [alien_shot + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_shot + entity.alive], true
-    jmp .move_alien_shot_end
+    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    jmp .update_alien_shot_end
 
     ; move alien shot
 .move_alien_shot:
@@ -629,10 +632,20 @@ main:
     cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
     jne .move_alien_shot_end
     mov byte [alien_shot + entity.alive], false
+    jmp .update_alien_shot_end
 .move_alien_shot_end:
 
     ; animate alien shot
-    ; todo
+    dec byte [alien_shot_animation_timer]
+    jnz .animate_alien_shot_end
+    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    add dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width
+    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
+    jne .animate_alien_shot_end
+    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
+.animate_alien_shot_end:
+
+.update_alien_shot_end:
 
 ; ---------------------------------------------------------------------
 ;   RENDERING
@@ -983,6 +996,8 @@ saucer_moving_direction:
     db right
 cannon_shot_number:
     db -1
+alien_shot_animation_timer:
+    db alien_shot_animation_timer_reset_value
 
 section .bss
 window:
