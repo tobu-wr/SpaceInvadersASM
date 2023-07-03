@@ -32,6 +32,12 @@ aliens_count: equ aliens_row_count * aliens_column_count
 alien_explosion_width: equ 13
 alien_explosion_height: equ 7
 
+alien_shot_width: equ 3
+alien_shot_height: equ 7
+
+alien_shot_explosion_width: equ 6
+alien_shot_explosion_height: equ 8
+
 shelter_width: equ 22
 shelter_height: equ 16
 shelters_count: equ 4
@@ -48,6 +54,7 @@ true: equ 1
 false: equ 0
 
 infinite: equ -1
+singleshot: equ 0
 
 right: equ 1
 left: equ 0
@@ -252,6 +259,8 @@ main:
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
     load_texture alien_explosion_texture_file, alien_explosion_texture
+    load_texture alien_shot_texture_file, alien_shot_texture
+    load_texture alien_shot_explosion_texture_file, alien_shot_explosion_texture
     load_texture shelter_texture_file, shelter_texture
     load_texture saucer_texture_file, saucer_texture
     load_texture saucer_explosion_texture_file, saucer_explosion_texture
@@ -296,6 +305,20 @@ main:
     set_entity_dstrect alien_explosion, 0, 0, alien_explosion_width, alien_explosion_height
     mov byte [alien_explosion + entity.alive], false
     mov byte [alien_explosion + entity.lifetime], 0
+
+    ; create alien shot
+    set_entity_texture alien_shot, alien_shot_texture
+    set_entity_srcrect alien_shot, 0, 0, alien_shot_width, alien_shot_height
+    set_entity_dstrect alien_shot, 0, 0, alien_shot_width, alien_shot_height
+    mov byte [alien_shot + entity.alive], false
+    mov byte [alien_shot + entity.lifetime], infinite
+
+    ; create alien shot explosion
+    set_entity_texture alien_shot_explosion, alien_shot_explosion_texture
+    set_entity_srcrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
+    set_entity_dstrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
+    mov byte [alien_shot_explosion + entity.alive], false
+    mov byte [alien_shot_explosion + entity.lifetime], infinite
 
     ; create shelters
     mov rcx, shelters
@@ -388,7 +411,7 @@ main:
     mov [cannon_shot + entity.dstrect + SDL_Rect.x], eax
     mov dword [cannon_shot + entity.dstrect + SDL_Rect.y], cannon_y - cannon_shot_height + cannon_shot_speed
     mov byte [cannon_shot + entity.alive], true
-    play_sound cannon_shot_sound, 0
+    play_sound cannon_shot_sound, singleshot
     inc byte [cannon_shot_number]
     cmp byte [cannon_shot_number], 16
     jne .handle_space_key_end
@@ -550,7 +573,7 @@ main:
     mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
-    play_sound alien_explosion_sound, 0
+    play_sound alien_explosion_sound, singleshot
     jmp .update_cannon_shot_end
 .handle_cannon_shot_collision_aliens_end:
 
@@ -572,7 +595,7 @@ main:
     mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], 30
-    play_sound saucer_explosion_sound, 0
+    play_sound saucer_explosion_sound, singleshot
 .handle_cannon_shot_collision_saucer_end:
 
 .update_cannon_shot_end:
@@ -592,6 +615,8 @@ main:
     render_entity cannon_shot
     render_entity cannon_shot_explosion
     render_entity alien_explosion
+    render_entity alien_shot
+    render_entity alien_shot_explosion
     render_entity saucer
     render_entity saucer_explosion
 
@@ -639,6 +664,7 @@ main:
 ;   CLEANUP
 ; ---------------------------------------------------------------------
 
+    ; graphics
     free_texture space_texture
     free_texture cannon_texture
     free_texture cannon_shot_texture
@@ -647,16 +673,20 @@ main:
     free_texture medium_alien_texture
     free_texture small_alien_texture
     free_texture alien_explosion_texture
+    free_texture alien_shot_texture
+    free_texture alien_shot_explosion_texture
     free_texture shelter_texture
     free_texture saucer_texture
     free_texture saucer_explosion_texture
     
+    ; sound
     free_sound cannon_shot_sound
     free_sound alien_explosion_sound
     free_sound saucer_sound
     free_sound saucer_explosion_sound
     call Mix_CloseAudio
 
+    ; misc
 .free_sdl_image:
     call IMG_Quit
 .free_renderer:
@@ -893,6 +923,10 @@ small_alien_texture_file:
     db "res/small_alien.png", 0
 alien_explosion_texture_file:
     db "res/alien_explosion.png", 0
+alien_shot_texture_file:
+    db "res/alien_shot.png", 0
+alien_shot_explosion_texture_file:
+    db "res/alien_shot_explosion.png", 0
 shelter_texture_file:
     db "res/shelter.png", 0
 saucer_texture_file:
@@ -943,6 +977,10 @@ small_alien_texture:
     resq 1
 alien_explosion_texture:
     resq 1
+alien_shot_texture:
+    resq 1
+alien_shot_explosion_texture:
+    resq 1
 shelter_texture:
     resq 1
 saucer_texture:
@@ -966,6 +1004,10 @@ cannon_shot_explosion:
 aliens:
     resq entity_size * aliens_count
 alien_explosion:
+    resq entity_size
+alien_shot:
+    resq entity_size
+alien_shot_explosion:
     resq entity_size
 shelters:
     resq entity_size * shelters_count
