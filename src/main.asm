@@ -518,12 +518,12 @@ main:
     je .move_saucer_right
     dec dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], -saucer_width
-    jne .move_saucer_end
+    jg .move_saucer_end
     jmp .restart_saucer_spawn_timer
 .move_saucer_right:
     inc dword [saucer + entity.dstrect + SDL_Rect.x]
     cmp dword [saucer + entity.dstrect + SDL_Rect.x], screen_width
-    jne .move_saucer_end
+    jl .move_saucer_end
 .restart_saucer_spawn_timer:
     mov byte [saucer + entity.alive], false
     mov ecx, [saucer_sound_channel]
@@ -604,7 +604,35 @@ main:
 ;   ALIEN SHOT UPDATE
 ; ---------------------------------------------------------------------
 
-; todo
+    cmp byte [alien_shot + entity.alive], true
+    je .move_alien_shot
+
+    ; get closest alien
+    ; todo
+    mov rax, aliens
+
+    ; spawn alien shot
+    mov ecx, [rax + entity.dstrect + SDL_Rect.w]
+    sub ecx, alien_shot_width
+    sar ecx, 1
+    add ecx, [rax + entity.dstrect + SDL_Rect.x]
+    mov [alien_shot + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, [rax + entity.dstrect + SDL_Rect.y]
+    add ecx, [rax + entity.dstrect + SDL_Rect.h]
+    mov [alien_shot + entity.dstrect + SDL_Rect.y], ecx
+    mov byte [alien_shot + entity.alive], true
+    jmp .move_alien_shot_end
+
+    ; move alien shot
+.move_alien_shot:
+    inc dword [alien_shot + entity.dstrect + SDL_Rect.y]
+    cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
+    jne .move_alien_shot_end
+    mov byte [alien_shot + entity.alive], false
+.move_alien_shot_end:
+
+    ; animate alien shot
+    ; todo
 
 ; ---------------------------------------------------------------------
 ;   RENDERING
