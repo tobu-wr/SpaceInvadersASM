@@ -145,6 +145,11 @@ endstruc
     call Mix_PlayChannel
 %endmacro
 
+%macro stop_sound 1
+    mov ecx, [%1] ; channel
+    call Mix_HaltChannel
+%endmacro
+
 %macro free_sound 1
     mov rcx, [%1] ; sound
     call Mix_FreeChunk
@@ -527,8 +532,7 @@ main:
     jl .move_saucer_end
 .restart_saucer_spawn_timer:
     mov byte [saucer + entity.alive], false
-    mov ecx, [saucer_sound_channel]
-    call Mix_HaltChannel
+    stop_sound saucer_sound_channel
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
 .move_saucer_end:
 
@@ -583,8 +587,7 @@ main:
     test rax, rax
     je .handle_cannon_shot_collision_saucer_end
     mov byte [saucer + entity.alive], false
-    mov ecx, [saucer_sound_channel]
-    call Mix_HaltChannel
+    stop_sound saucer_sound_channel
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
     mov ecx, saucer_width / 2
     sub ecx, saucer_explosion_width / 2
@@ -630,7 +633,7 @@ main:
 .move_alien_shot:
     inc dword [alien_shot + entity.dstrect + SDL_Rect.y]
     cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
-    jne .move_alien_shot_end
+    jb .move_alien_shot_end
     mov byte [alien_shot + entity.alive], false
     jmp .update_alien_shot_end
 .move_alien_shot_end:
@@ -639,9 +642,11 @@ main:
     dec byte [alien_shot_animation_timer]
     jnz .animate_alien_shot_end
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 3
+    je .animate_alien_shot_reset
     add dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width
-    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
-    jne .animate_alien_shot_end
+    jmp .animate_alien_shot_end
+.animate_alien_shot_reset:
     mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
 .animate_alien_shot_end:
 
