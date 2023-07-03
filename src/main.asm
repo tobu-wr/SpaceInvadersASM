@@ -14,11 +14,11 @@ cannon_y: equ 216
 cannon_width: equ 13
 cannon_height: equ 8
 
-laser_height: equ 4
-laser_speed: equ 4
+cannon_shot_height: equ 4
+cannon_shot_speed: equ 4
 
-laser_explosion_width: equ 8
-laser_explosion_height: equ 8
+cannon_shot_explosion_width: equ 8
+cannon_shot_explosion_height: equ 8
 
 small_alien_width: equ 8
 medium_alien_width: equ 11
@@ -68,10 +68,10 @@ endstruc
 ;   MACROS
 ; ---------------------------------------------------------------------
 
-%macro check_laser_collision 2
+%macro check_cannon_shot_collision 2
     mov rcx, %1 ; entities
     mov dl, %2 ; count
-    call check_laser_collision_func
+    call check_cannon_shot_collision_func
 %endmacro
 
 %macro create_aliens_row 3
@@ -246,8 +246,8 @@ main:
     ; load textures
     load_texture space_texture_file, space_texture
     load_texture cannon_texture_file, cannon_texture
-    load_texture laser_texture_file, laser_texture
-    load_texture laser_explosion_texture_file, laser_explosion_texture
+    load_texture cannon_shot_texture_file, cannon_shot_texture
+    load_texture cannon_shot_explosion_texture_file, cannon_shot_explosion_texture
     load_texture large_alien_texture_file, large_alien_texture
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
@@ -257,7 +257,7 @@ main:
     load_texture saucer_explosion_texture_file, saucer_explosion_texture
 
     ; load sounds
-    load_sound laser_sound_file, laser_sound
+    load_sound cannon_shot_sound_file, cannon_shot_sound
     load_sound alien_explosion_sound_file, alien_explosion_sound
     load_sound saucer_sound_file, saucer_sound
     load_sound saucer_explosion_sound_file, saucer_explosion_sound
@@ -269,19 +269,19 @@ main:
     mov byte [cannon + entity.alive], true
     mov byte [cannon + entity.lifetime], infinite
 
-    ; create laser
-    set_entity_texture laser, laser_texture
-    set_entity_srcrect laser, 0, 0, 1, laser_height
-    set_entity_dstrect laser, 0, 0, 1, laser_height
-    mov byte [laser + entity.alive], false
-    mov byte [laser + entity.lifetime], infinite
+    ; create cannon shot
+    set_entity_texture cannon_shot, cannon_shot_texture
+    set_entity_srcrect cannon_shot, 0, 0, 1, cannon_shot_height
+    set_entity_dstrect cannon_shot, 0, 0, 1, cannon_shot_height
+    mov byte [cannon_shot + entity.alive], false
+    mov byte [cannon_shot + entity.lifetime], infinite
 
-    ; create laser explosion
-    set_entity_texture laser_explosion, laser_explosion_texture
-    set_entity_srcrect laser_explosion, 0, 0, laser_explosion_width, laser_explosion_height
-    set_entity_dstrect laser_explosion, 0, 0, laser_explosion_width, laser_explosion_height
-    mov byte [laser_explosion + entity.alive], false
-    mov byte [laser_explosion + entity.lifetime], 0
+    ; create cannon shot explosion
+    set_entity_texture cannon_shot_explosion, cannon_shot_explosion_texture
+    set_entity_srcrect cannon_shot_explosion, 0, 0, cannon_shot_explosion_width, cannon_shot_explosion_height
+    set_entity_dstrect cannon_shot_explosion, 0, 0, cannon_shot_explosion_width, cannon_shot_explosion_height
+    mov byte [cannon_shot_explosion + entity.alive], false
+    mov byte [cannon_shot_explosion + entity.lifetime], 0
 
     ; create aliens
     create_aliens_row large_alien_texture, large_alien_width, 0
@@ -381,18 +381,18 @@ main:
     mov [space_key_state], al
     test al, al
     je .handle_space_key_end
-    cmp byte [laser + entity.alive], true
+    cmp byte [cannon_shot + entity.alive], true
     je .handle_space_key_end
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     add eax, cannon_width / 2
-    mov [laser + entity.dstrect + SDL_Rect.x], eax
-    mov dword [laser + entity.dstrect + SDL_Rect.y], cannon_y - laser_height + laser_speed
-    mov byte [laser + entity.alive], true
-    play_sound laser_sound, 0
-    inc byte [laser_shot_number]
-    cmp byte [laser_shot_number], 16
+    mov [cannon_shot + entity.dstrect + SDL_Rect.x], eax
+    mov dword [cannon_shot + entity.dstrect + SDL_Rect.y], cannon_y - cannon_shot_height + cannon_shot_speed
+    mov byte [cannon_shot + entity.alive], true
+    play_sound cannon_shot_sound, 0
+    inc byte [cannon_shot_number]
+    cmp byte [cannon_shot_number], 16
     jne .handle_space_key_end
-    mov byte [laser_shot_number], 0
+    mov byte [cannon_shot_number], 0
 .handle_space_key_end:
 
 ; ---------------------------------------------------------------------
@@ -476,7 +476,7 @@ main:
     mov byte [saucer + entity.alive], true
     play_sound saucer_sound, infinite
     mov [saucer_sound_channel], eax
-    bt word [laser_shot_number], 0
+    bt word [cannon_shot_number], 0
     jc .spawn_saucer_left
     mov dword [saucer + entity.dstrect + SDL_Rect.x], screen_width - saucer_width
     mov byte [saucer_moving_direction], left
@@ -509,34 +509,34 @@ main:
 .move_saucer_end:
 
 ; ---------------------------------------------------------------------
-;   LASER UPDATE
+;   CANNON SHOT UPDATE
 ; ---------------------------------------------------------------------
 
-    cmp byte [laser + entity.alive], false
-    je .update_laser_end
+    cmp byte [cannon_shot + entity.alive], false
+    je .update_cannon_shot_end
 
-    ; move laser
-    sub dword [laser + entity.dstrect + SDL_Rect.y], laser_speed
-    cmp dword [laser + entity.dstrect + SDL_Rect.y], 0
-    jge .move_laser_end
-    mov byte [laser + entity.alive], false
-    mov eax, [laser + entity.dstrect + SDL_Rect.x]
-    sub eax, laser_explosion_width / 2
-    mov [laser_explosion + entity.dstrect + SDL_Rect.x], eax
-    mov byte [laser_explosion + entity.alive], true
-    mov byte [laser_explosion + entity.lifetime], 30
-    jmp .update_laser_end
-.move_laser_end:
+    ; move cannon shot
+    sub dword [cannon_shot + entity.dstrect + SDL_Rect.y], cannon_shot_speed
+    cmp dword [cannon_shot + entity.dstrect + SDL_Rect.y], 0
+    jge .move_cannon_shot_end
+    mov byte [cannon_shot + entity.alive], false
+    mov eax, [cannon_shot + entity.dstrect + SDL_Rect.x]
+    sub eax, cannon_shot_explosion_width / 2
+    mov [cannon_shot_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov byte [cannon_shot_explosion + entity.alive], true
+    mov byte [cannon_shot_explosion + entity.lifetime], 30
+    jmp .update_cannon_shot_end
+.move_cannon_shot_end:
 
-    ; handle laser collision with shelters
-    check_laser_collision shelters, shelters_count
+    ; handle cannon shot collision with shelters
+    check_cannon_shot_collision shelters, shelters_count
     test rax, rax
-    jne .update_laser_end
+    jne .update_cannon_shot_end
 
-    ; handle laser collision with aliens
-    check_laser_collision aliens, aliens_count
+    ; handle cannon shot collision with aliens
+    check_cannon_shot_collision aliens, aliens_count
     test rax, rax
-    je .handle_laser_collision_aliens_end
+    je .handle_cannon_shot_collision_aliens_end
     mov byte [rax + entity.alive], false
     mov ecx, [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_explosion_width
@@ -551,13 +551,13 @@ main:
     mov byte [alien_explosion + entity.alive], true
     mov byte [alien_explosion + entity.lifetime], 30
     play_sound alien_explosion_sound, 0
-    jmp .update_laser_end
-.handle_laser_collision_aliens_end:
+    jmp .update_cannon_shot_end
+.handle_cannon_shot_collision_aliens_end:
 
-    ; handle laser collision with saucer
-    check_laser_collision saucer, 1
+    ; handle cannon shot collision with saucer
+    check_cannon_shot_collision saucer, 1
     test rax, rax
-    je .handle_laser_collision_saucer_end
+    je .handle_cannon_shot_collision_saucer_end
     mov byte [saucer + entity.alive], false
     mov ecx, [saucer_sound_channel]
     call Mix_HaltChannel
@@ -573,9 +573,15 @@ main:
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], 30
     play_sound saucer_explosion_sound, 0
-.handle_laser_collision_saucer_end:
+.handle_cannon_shot_collision_saucer_end:
 
-.update_laser_end:
+.update_cannon_shot_end:
+
+; ---------------------------------------------------------------------
+;   ALIEN SHOT UPDATE
+; ---------------------------------------------------------------------
+
+; todo
 
 ; ---------------------------------------------------------------------
 ;   RENDERING
@@ -583,8 +589,8 @@ main:
 
     render_texture space_texture, 0, 0
     render_entity cannon
-    render_entity laser
-    render_entity laser_explosion
+    render_entity cannon_shot
+    render_entity cannon_shot_explosion
     render_entity alien_explosion
     render_entity saucer
     render_entity saucer_explosion
@@ -635,8 +641,8 @@ main:
 
     free_texture space_texture
     free_texture cannon_texture
-    free_texture laser_texture
-    free_texture laser_explosion_texture
+    free_texture cannon_shot_texture
+    free_texture cannon_shot_explosion_texture
     free_texture large_alien_texture
     free_texture medium_alien_texture
     free_texture small_alien_texture
@@ -644,11 +650,13 @@ main:
     free_texture shelter_texture
     free_texture saucer_texture
     free_texture saucer_explosion_texture
-    free_sound laser_sound
+    
+    free_sound cannon_shot_sound
     free_sound alien_explosion_sound
     free_sound saucer_sound
     free_sound saucer_explosion_sound
     call Mix_CloseAudio
+
 .free_sdl_image:
     call IMG_Quit
 .free_renderer:
@@ -680,25 +688,25 @@ main:
 ;   dl = count
 ; output:
 ;   rax = collided entity
-check_laser_collision_func:
+check_cannon_shot_collision_func:
 .loop:
     cmp byte [rcx + entity.alive], false
     je .next
     mov eax, [rcx + entity.dstrect + SDL_Rect.x]
-    cmp eax, [laser + entity.dstrect + SDL_Rect.x]
+    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.x]
     ja .next
     add eax, [rcx + entity.dstrect + SDL_Rect.w]
-    cmp eax, [laser + entity.dstrect + SDL_Rect.x]
+    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.x]
     jbe .next
-    mov eax, [laser + entity.dstrect + SDL_Rect.y]
-    add eax, laser_height
+    mov eax, [cannon_shot + entity.dstrect + SDL_Rect.y]
+    add eax, cannon_shot_height
     cmp eax, [rcx + entity.dstrect + SDL_Rect.y]
     jbe .next
     mov eax, [rcx + entity.dstrect + SDL_Rect.y]
     add eax, [rcx + entity.dstrect + SDL_Rect.h]
-    cmp eax, [laser + entity.dstrect + SDL_Rect.y]
+    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.y]
     jbe .next
-    mov byte [laser + entity.alive], false
+    mov byte [cannon_shot + entity.alive], false
     mov rax, rcx
     ret
 .next:
@@ -868,15 +876,15 @@ load_sound_msg_success:
 load_sound_msg_fail:
     db "ERR > Failed to load sound (%s)", 10, 0
 title:
-    db "Space Invaders", 0
+    db "Space Invaders ASM", 0
 space_texture_file:
     db "res/space.png", 0
 cannon_texture_file:
     db "res/cannon.png", 0
-laser_texture_file:
-    db "res/laser.png", 0
-laser_explosion_texture_file:
-    db "res/laser_explosion.png", 0
+cannon_shot_texture_file:
+    db "res/cannon_shot.png", 0
+cannon_shot_explosion_texture_file:
+    db "res/cannon_shot_explosion.png", 0
 large_alien_texture_file:
     db "res/large_alien.png", 0
 medium_alien_texture_file:
@@ -891,8 +899,8 @@ saucer_texture_file:
     db "res/saucer.png", 0
 saucer_explosion_texture_file:
     db "res/saucer_explosion.png", 0
-laser_sound_file:
-    db "res/laser.wav", 0
+cannon_shot_sound_file:
+    db "res/cannon_shot.wav", 0
 alien_explosion_sound_file:
     db "res/alien_explosion.wav", 0
 saucer_sound_file:
@@ -911,7 +919,7 @@ saucer_moving_timer:
     db saucer_moving_timer_reset_value
 saucer_moving_direction:
     db right
-laser_shot_number:
+cannon_shot_number:
     db -1
 
 section .bss
@@ -923,9 +931,9 @@ space_texture:
     resq 1
 cannon_texture:
     resq 1
-laser_texture:
+cannon_shot_texture:
     resq 1
-laser_explosion_texture:
+cannon_shot_explosion_texture:
     resq 1
 large_alien_texture:
     resq 1
@@ -941,7 +949,7 @@ saucer_texture:
     resq 1
 saucer_explosion_texture:
     resq 1
-laser_sound:
+cannon_shot_sound:
     resq 1
 alien_explosion_sound:
     resq 1
@@ -951,9 +959,9 @@ saucer_explosion_sound:
     resq 1
 cannon:
     resb entity_size
-laser:
+cannon_shot:
     resb entity_size
-laser_explosion:
+cannon_shot_explosion:
     resb entity_size
 aliens:
     resq entity_size * aliens_count
