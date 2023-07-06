@@ -28,6 +28,7 @@ alien_speed: equ 2
 aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
+aliens_end: equ aliens + entity_size * aliens_count
 
 alien_explosion_width: equ 13
 alien_explosion_height: equ 7
@@ -42,6 +43,7 @@ alien_shot_explosion_height: equ 8
 shelter_width: equ 22
 shelter_height: equ 16
 shelters_count: equ 4
+shelters_end: equ shelters + entity_size * shelters_count
 
 saucer_y: equ 41
 saucer_width: equ 16
@@ -352,7 +354,7 @@ main:
     mov byte [rcx + entity.lifetime], infinite
     add rcx, entity_size
     add edx, shelter_width + 23
-    cmp rcx, shelters + entity_size * shelters_count
+    cmp rcx, shelters_end
     jne .create_shelter
 
     ; create saucer
@@ -463,7 +465,7 @@ main:
     jmp .get_current_alien
 .check_aliens_left_next:
     add rax, entity_size
-    cmp rax, aliens + entity_size * aliens_count
+    cmp rax, aliens_end
     jne .check_aliens_left
     jmp .get_current_alien
 .check_aliens_right:
@@ -478,7 +480,7 @@ main:
     jmp .get_current_alien
 .check_aliens_right_next:
     add rax, entity_size
-    cmp rax, aliens + entity_size * aliens_count
+    cmp rax, aliens_end
     jne .check_aliens_right
     jmp .get_current_alien
 .get_current_alien_loop_check:
@@ -651,7 +653,7 @@ main:
     jne .get_above_alien_next_end
     xor r11b, r11b
 .get_above_alien_next_end:
-    cmp r10, aliens + entity_size * aliens_count
+    cmp r10, aliens_end
     jne .get_above_alien
 
     ; spawn alien shot 1
@@ -682,9 +684,10 @@ main:
 
     ; spawn alien shot 2
     ; todo
+    jmp .update_alien_shot2_end
 
 .move_animate_alien_shot2:
-    ;move_animate_alien_shot alien_shot2
+    move_animate_alien_shot alien_shot2
 
 .update_alien_shot2_end:
 
@@ -697,9 +700,10 @@ main:
 
     ; spawn alien shot 3
     ; todo
+    jmp .update_alien_shot3_end
 
 .move_animate_alien_shot3:
-    ;move_animate_alien_shot alien_shot3
+    move_animate_alien_shot alien_shot3
 
 .update_alien_shot3_end:
 
@@ -730,7 +734,7 @@ main:
 .render_alien:
     render_entity rsi
     add rsi, entity_size
-    cmp rsi, aliens + entity_size * aliens_count
+    cmp rsi, aliens_end
     jne .render_alien
 
     ; render shelters
@@ -738,7 +742,7 @@ main:
 .render_shelter:
     render_entity rsi
     add rsi, entity_size
-    cmp rsi, shelters + entity_size * shelters_count
+    cmp rsi, shelters_end
     jne .render_shelter
 
     ; update screen
@@ -855,7 +859,7 @@ move_aliens_down:
 .loop:
     add dword [rax + entity.dstrect + SDL_Rect.y], 8
     add rax, entity_size
-    cmp rax, aliens + entity_size * aliens_count
+    cmp rax, aliens_end
     jne .loop
     ret
 
