@@ -28,6 +28,7 @@ alien_speed: equ 2
 aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
+alien_space_width: equ 16
 
 alien_explosion_width: equ 13
 alien_explosion_height: equ 7
@@ -203,7 +204,7 @@ main:
     ; create renderer
     mov rcx, [window]
     mov edx, -1 ; index
-    mov r8d, 0 ; flags
+    xor r8d, r8d ; flags
     call SDL_CreateRenderer
     test rax, rax
     jne .create_renderer_success
@@ -356,7 +357,7 @@ main:
     mov byte [saucer_explosion + entity.lifetime], 0
 
     ; get keyboard state
-    mov rcx, 0 ; numkeys
+    xor rcx, rcx ; numkeys
     call SDL_GetKeyboardState
     mov [keyboard_state], rax
 
@@ -612,27 +613,38 @@ main:
     je .move_alien_shot
 
     ; get above alien
-    mov r8, 0
-    mov rcx, aliens
-    mov dl, aliens_count
+    xor r8, r8 ; r8 = above alien
+    xor r9b, r9b ; r9b = its column
+    mov r10, aliens ; r10 = current alien
+    xor r11b, r11b ; r11b = its column
+    mov cl, aliens_count
 .get_above_alien:
-    cmp byte [rcx + entity.alive], false
+    cmp byte [r10 + entity.alive], false
     je .get_above_alien_next
     test r8, r8
-    cmove r8, rcx
+    je .get_above_alien_update
+    cmp r9b, r11b
     je .get_above_alien_next
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     sub eax, [r8 + entity.dstrect + SDL_Rect.x]
     mul eax
-    mov r9d, eax
+    mov esi, eax ; esi = horizontal squared distance between cannon and above alien
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
-    sub eax, [rcx + entity.dstrect + SDL_Rect.x]
-    mul eax
-    cmp r9d, eax
-    cmova r8, rcx
+    sub eax, [r10 + entity.dstrect + SDL_Rect.x]
+    mul eax ; eax = horizontal squared distance between cannon and current alien
+    cmp esi, eax
+    jbe .get_above_alien_next
+.get_above_alien_update:
+    mov r8, r10
+    mov r9b, r11b
 .get_above_alien_next:
-    add rcx, entity_size
-    dec dl
+    add r10, entity_size
+    inc r11b
+    cmp r11b, aliens_column_count
+    jne .get_above_alien_next_end
+    xor r11b, r11b
+.get_above_alien_next_end:
+    dec cl
     jnz .get_above_alien
 
     ; spawn alien shot
@@ -862,7 +874,7 @@ create_aliens_row_func:
     mov byte [r10 + entity.alive], true
     mov byte [r10 + entity.lifetime], infinite
     add r10, entity_size
-    add r9d, 16
+    add r9d, alien_space_width
     dec r11b
     jnz .loop
     add rsp, 40
