@@ -28,7 +28,6 @@ alien_speed: equ 2
 aliens_row_count: equ 5
 aliens_column_count: equ 11
 aliens_count: equ aliens_row_count * aliens_column_count
-alien_space_width: equ 16
 
 alien_explosion_width: equ 13
 alien_explosion_height: equ 7
@@ -648,17 +647,17 @@ main:
     jnz .get_above_alien
 
     ; spawn alien shot
-    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
-    mov ecx, [r8 + entity.dstrect + SDL_Rect.w]
-    sub ecx, alien_shot_width
-    sar ecx, 1
-    add ecx, [r8 + entity.dstrect + SDL_Rect.x]
-    mov [alien_shot + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, [r8 + entity.dstrect + SDL_Rect.y]
-    add ecx, [r8 + entity.dstrect + SDL_Rect.h]
-    mov [alien_shot + entity.dstrect + SDL_Rect.y], ecx
+    mov eax, [r8 + entity.dstrect + SDL_Rect.w]
+    sub eax, alien_shot_width
+    sar eax, 1
+    add eax, [r8 + entity.dstrect + SDL_Rect.x]
+    mov [alien_shot + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [r8 + entity.dstrect + SDL_Rect.y]
+    add eax, [r8 + entity.dstrect + SDL_Rect.h]
+    mov [alien_shot + entity.dstrect + SDL_Rect.y], eax
     mov byte [alien_shot + entity.alive], true
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
     jmp .update_alien_shot_end
 
     ; move alien shot
@@ -674,11 +673,9 @@ main:
     dec byte [alien_shot_animation_timer]
     jnz .animate_alien_shot_end
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 3
-    je .animate_alien_shot_reset
     add dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width
-    jmp .animate_alien_shot_end
-.animate_alien_shot_reset:
+    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
+    jne .animate_alien_shot_end
     mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
 .animate_alien_shot_end:
 
@@ -874,7 +871,7 @@ create_aliens_row_func:
     mov byte [r10 + entity.alive], true
     mov byte [r10 + entity.lifetime], infinite
     add r10, entity_size
-    add r9d, alien_space_width
+    add r9d, 16
     dec r11b
     jnz .loop
     add rsp, 40
