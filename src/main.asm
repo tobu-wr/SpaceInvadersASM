@@ -82,6 +82,11 @@ endstruc
     call check_cannon_shot_collision_func
 %endmacro
 
+%macro move_animate_alien_shot 1
+    mov rcx, %1
+    call move_animate_alien_shot_func
+%endmacro
+
 %macro create_alien_shot 2
     set_entity_texture %1, %2
     set_entity_srcrect %1, 0, 0, alien_shot_width, alien_shot_height
@@ -613,11 +618,11 @@ main:
 .update_cannon_shot_end:
 
 ; ---------------------------------------------------------------------
-;   ALIEN SHOT UPDATE
+;   ALIEN SHOT 1 UPDATE
 ; ---------------------------------------------------------------------
 
     cmp byte [alien_shot1 + entity.alive], true
-    je .move_alien_shot
+    je .move_animate_alien_shot1
 
     ; get above alien
     xor r8, r8 ; r8 = above alien
@@ -654,7 +659,7 @@ main:
     dec cl
     jnz .get_above_alien
 
-    ; spawn alien shot
+    ; spawn alien shot 1
     mov eax, [r8 + entity.dstrect + SDL_Rect.w]
     sub eax, alien_shot_width
     sar eax, 1
@@ -666,33 +671,42 @@ main:
     mov byte [alien_shot1 + entity.alive], true
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
     mov dword [alien_shot1 + entity.srcrect + SDL_Rect.x], 0
-    jmp .update_alien_shot_end
+    jmp .update_alien_shot1_end
 
-    ; move alien shot
-.move_alien_shot:
-    inc dword [alien_shot1 + entity.dstrect + SDL_Rect.y]
-    cmp dword [alien_shot1 + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
-    jbe .move_alien_shot_end
-    mov byte [alien_shot1 + entity.alive], false
-    mov eax, [alien_shot1 + entity.dstrect + SDL_Rect.x]
-    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
-    mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
-    mov byte [alien_shot_explosion + entity.alive], true
-    mov byte [alien_shot_explosion + entity.lifetime], 30
-    jmp .update_alien_shot_end
-.move_alien_shot_end:
+.move_animate_alien_shot1:
+    move_animate_alien_shot alien_shot1
 
-    ; animate alien shot
-    dec byte [alien_shot_animation_timer]
-    jnz .animate_alien_shot_end
-    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    add dword [alien_shot1 + entity.srcrect + SDL_Rect.x], alien_shot_width
-    cmp dword [alien_shot1 + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
-    jne .animate_alien_shot_end
-    mov dword [alien_shot1 + entity.srcrect + SDL_Rect.x], 0
-.animate_alien_shot_end:
+.update_alien_shot1_end:
 
-.update_alien_shot_end:
+; ---------------------------------------------------------------------
+;   ALIEN SHOT 2 UPDATE
+; ---------------------------------------------------------------------
+
+    cmp byte [alien_shot2 + entity.alive], true
+    je .move_animate_alien_shot2
+
+    ; spawn alien shot 2
+    ; todo
+
+.move_animate_alien_shot2:
+    move_animate_alien_shot alien_shot2
+
+.update_alien_shot2_end:
+
+; ---------------------------------------------------------------------
+;   ALIEN SHOT 3 UPDATE
+; ---------------------------------------------------------------------
+
+    cmp byte [alien_shot3 + entity.alive], true
+    je .move_animate_alien_shot3
+
+    ; spawn alien shot 3
+    ; todo
+
+.move_animate_alien_shot3:
+    move_animate_alien_shot alien_shot3
+
+.update_alien_shot3_end:
 
 ; ---------------------------------------------------------------------
 ;   CHECK COLLISIONS
@@ -855,6 +869,33 @@ move_aliens_down:
     add rax, entity_size
     dec cl
     jnz .loop
+    ret
+
+; input: rcx = alien shot
+move_animate_alien_shot_func:
+    ; move
+    inc dword [rcx + entity.dstrect + SDL_Rect.y]
+    cmp dword [rcx + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
+    jbe .move_end
+    mov byte [rcx + entity.alive], false
+    mov eax, [rcx + entity.dstrect + SDL_Rect.x]
+    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
+    mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov byte [alien_shot_explosion + entity.alive], true
+    mov byte [alien_shot_explosion + entity.lifetime], 30
+    jmp .end
+.move_end:
+
+    ; animate
+    dec byte [alien_shot_animation_timer]
+    jnz .end
+    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    add dword [rcx + entity.srcrect + SDL_Rect.x], alien_shot_width
+    cmp dword [rcx + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
+    jne .end
+    mov dword [rcx + entity.srcrect + SDL_Rect.x], 0
+
+.end:
     ret
 
 ; inputs:
