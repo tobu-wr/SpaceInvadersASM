@@ -428,13 +428,13 @@ main:
 ;   ALIEN UPDATE
 ; ---------------------------------------------------------------------
 
-    ; get alien
-.get_alien:
+    ; get current alien ie. next one alive
+.get_current_alien:
     mov rax, [current_alien]
-.get_alien_loop:
+.get_current_alien_loop:
     add rax, entity_size
-    cmp rax, aliens + aliens_count * entity_size
-    jne .get_alien_loop_check
+    cmp rax, aliens + aliens_count * entity_size ; we went over all aliens?
+    jne .get_current_alien_loop_check
     mov qword [current_alien], aliens - entity_size
     mov rax, aliens
     mov cl, aliens_count
@@ -447,12 +447,12 @@ main:
     jae .check_aliens_left_next
     mov byte [aliens_moving_direction], right
     call move_aliens_down
-    jmp .get_alien
+    jmp .get_current_alien
 .check_aliens_left_next:
     add rax, entity_size
     dec cl
     jnz .check_aliens_left
-    jmp .get_alien
+    jmp .get_current_alien
 .check_aliens_right:
     cmp byte [rax + entity.alive], false
     je .check_aliens_right_next
@@ -462,35 +462,35 @@ main:
     jbe .check_aliens_right_next
     mov byte [aliens_moving_direction], left
     call move_aliens_down
-    jmp .get_alien
+    jmp .get_current_alien
 .check_aliens_right_next:
     add rax, entity_size
     dec cl
     jnz .check_aliens_right
-    jmp .get_alien
-.get_alien_loop_check:
+    jmp .get_current_alien
+.get_current_alien_loop_check:
     cmp byte [rax + entity.alive], false
-    je .get_alien_loop
+    je .get_current_alien_loop
     mov [current_alien], rax
 
-    ; move alien
+    ; move current alien
     cmp byte [aliens_moving_direction], right
-    je .move_alien_right
+    je .move_current_alien_right
     sub dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
-    jmp .move_alien_end
-.move_alien_right:
+    jmp .move_current_alien_end
+.move_current_alien_right:
     add dword [rax + entity.dstrect + SDL_Rect.x], alien_speed
-.move_alien_end:
+.move_current_alien_end:
 
-    ; animate alien
+    ; animate current alien
     mov ecx, [rax + entity.srcrect + SDL_Rect.w]
     cmp ecx, [rax + entity.srcrect + SDL_Rect.x]
-    je .animate_alien_reset
+    je .animate_current_alien_reset
     mov [rax + entity.srcrect + SDL_Rect.x], ecx
-    jmp .animate_alien_end
-.animate_alien_reset:
+    jmp .animate_current_alien_end
+.animate_current_alien_reset:
     mov dword [rax + entity.srcrect + SDL_Rect.x], 0
-.animate_alien_end:
+.animate_current_alien_end:
 
 ; ---------------------------------------------------------------------
 ;   SAUCER UPDATE
@@ -611,15 +611,16 @@ main:
     cmp byte [alien_shot + entity.alive], true
     je .move_alien_shot
 
-    ; get closest alien
+    ; get above alien
     mov r8, 0
     mov rcx, aliens
     mov dl, aliens_count
-.get_closest_alien:
+.get_above_alien:
     cmp byte [rcx + entity.alive], false
-    je .get_closest_alien_next
+    je .get_above_alien_next
     test r8, r8
-    je .init_closest_alien
+    cmove r8, rcx
+    je .get_above_alien_next
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     sub eax, [r8 + entity.dstrect + SDL_Rect.x]
     mul eax
@@ -629,13 +630,10 @@ main:
     mul eax
     cmp r9d, eax
     cmova r8, rcx
-    jmp .get_closest_alien_next
-.init_closest_alien:
-    mov r8, rcx
-.get_closest_alien_next:
+.get_above_alien_next:
     add rcx, entity_size
     dec dl
-    jnz .get_closest_alien
+    jnz .get_above_alien
 
     ; spawn alien shot
     mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
