@@ -82,6 +82,14 @@ endstruc
     call check_cannon_shot_collision_func
 %endmacro
 
+%macro create_alien_shot 2
+    set_entity_texture %1, %2
+    set_entity_srcrect %1, 0, 0, alien_shot_width, alien_shot_height
+    set_entity_dstrect %1, 0, 0, alien_shot_width, alien_shot_height
+    mov byte [%1 + entity.alive], false
+    mov byte [%1 + entity.lifetime], infinite
+%endmacro
+
 %macro create_aliens_row 3
     mov rcx, %1 ; texture
     mov edx, %2 ; width
@@ -265,7 +273,9 @@ main:
     load_texture medium_alien_texture_file, medium_alien_texture
     load_texture small_alien_texture_file, small_alien_texture
     load_texture alien_explosion_texture_file, alien_explosion_texture
-    load_texture alien_shot_texture_file, alien_shot_texture
+    load_texture alien_shot1_texture_file, alien_shot1_texture
+    load_texture alien_shot2_texture_file, alien_shot2_texture
+    load_texture alien_shot3_texture_file, alien_shot3_texture
     load_texture alien_shot_explosion_texture_file, alien_shot_explosion_texture
     load_texture shelter_texture_file, shelter_texture
     load_texture saucer_texture_file, saucer_texture
@@ -312,12 +322,10 @@ main:
     mov byte [alien_explosion + entity.alive], false
     mov byte [alien_explosion + entity.lifetime], 0
 
-    ; create alien shot
-    set_entity_texture alien_shot, alien_shot_texture
-    set_entity_srcrect alien_shot, 0, 0, alien_shot_width, alien_shot_height
-    set_entity_dstrect alien_shot, 0, 0, alien_shot_width, alien_shot_height
-    mov byte [alien_shot + entity.alive], false
-    mov byte [alien_shot + entity.lifetime], infinite
+    ; create alien shots
+    create_alien_shot alien_shot1, alien_shot1_texture
+    create_alien_shot alien_shot2, alien_shot2_texture
+    create_alien_shot alien_shot3, alien_shot3_texture
 
     ; create alien shot explosion
     set_entity_texture alien_shot_explosion, alien_shot_explosion_texture
@@ -608,7 +616,7 @@ main:
 ;   ALIEN SHOT UPDATE
 ; ---------------------------------------------------------------------
 
-    cmp byte [alien_shot + entity.alive], true
+    cmp byte [alien_shot1 + entity.alive], true
     je .move_alien_shot
 
     ; get above alien
@@ -651,22 +659,22 @@ main:
     sub eax, alien_shot_width
     sar eax, 1
     add eax, [r8 + entity.dstrect + SDL_Rect.x]
-    mov [alien_shot + entity.dstrect + SDL_Rect.x], eax
+    mov [alien_shot1 + entity.dstrect + SDL_Rect.x], eax
     mov eax, [r8 + entity.dstrect + SDL_Rect.y]
     add eax, [r8 + entity.dstrect + SDL_Rect.h]
-    mov [alien_shot + entity.dstrect + SDL_Rect.y], eax
-    mov byte [alien_shot + entity.alive], true
+    mov [alien_shot1 + entity.dstrect + SDL_Rect.y], eax
+    mov byte [alien_shot1 + entity.alive], true
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
+    mov dword [alien_shot1 + entity.srcrect + SDL_Rect.x], 0
     jmp .update_alien_shot_end
 
     ; move alien shot
 .move_alien_shot:
-    inc dword [alien_shot + entity.dstrect + SDL_Rect.y]
-    cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
+    inc dword [alien_shot1 + entity.dstrect + SDL_Rect.y]
+    cmp dword [alien_shot1 + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
     jbe .move_alien_shot_end
-    mov byte [alien_shot + entity.alive], false
-    mov eax, [alien_shot + entity.dstrect + SDL_Rect.x]
+    mov byte [alien_shot1 + entity.alive], false
+    mov eax, [alien_shot1 + entity.dstrect + SDL_Rect.x]
     sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
     mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [alien_shot_explosion + entity.alive], true
@@ -678,10 +686,10 @@ main:
     dec byte [alien_shot_animation_timer]
     jnz .animate_alien_shot_end
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    add dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width
-    cmp dword [alien_shot + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
+    add dword [alien_shot1 + entity.srcrect + SDL_Rect.x], alien_shot_width
+    cmp dword [alien_shot1 + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
     jne .animate_alien_shot_end
-    mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
+    mov dword [alien_shot1 + entity.srcrect + SDL_Rect.x], 0
 .animate_alien_shot_end:
 
 .update_alien_shot_end:
@@ -701,7 +709,9 @@ main:
     render_entity cannon_shot
     render_entity cannon_shot_explosion
     render_entity alien_explosion
-    render_entity alien_shot
+    render_entity alien_shot1
+    render_entity alien_shot2
+    render_entity alien_shot3
     render_entity alien_shot_explosion
     render_entity saucer
     render_entity saucer_explosion
@@ -759,7 +769,9 @@ main:
     free_texture medium_alien_texture
     free_texture small_alien_texture
     free_texture alien_explosion_texture
-    free_texture alien_shot_texture
+    free_texture alien_shot1_texture
+    free_texture alien_shot2_texture
+    free_texture alien_shot3_texture
     free_texture alien_shot_explosion_texture
     free_texture shelter_texture
     free_texture saucer_texture
@@ -1009,8 +1021,12 @@ small_alien_texture_file:
     db "res/small_alien.png", 0
 alien_explosion_texture_file:
     db "res/alien_explosion.png", 0
-alien_shot_texture_file:
-    db "res/alien_shot.png", 0
+alien_shot1_texture_file:
+    db "res/alien_shot1.png", 0
+alien_shot2_texture_file:
+    db "res/alien_shot2.png", 0
+alien_shot3_texture_file:
+    db "res/alien_shot3.png", 0
 alien_shot_explosion_texture_file:
     db "res/alien_shot_explosion.png", 0
 shelter_texture_file:
@@ -1065,7 +1081,11 @@ small_alien_texture:
     resq 1
 alien_explosion_texture:
     resq 1
-alien_shot_texture:
+alien_shot1_texture:
+    resq 1
+alien_shot2_texture:
+    resq 1
+alien_shot3_texture:
     resq 1
 alien_shot_explosion_texture:
     resq 1
@@ -1093,7 +1113,11 @@ aliens:
     resq entity_size * aliens_count
 alien_explosion:
     resq entity_size
-alien_shot:
+alien_shot1:
+    resq entity_size
+alien_shot2:
+    resq entity_size
+alien_shot3:
     resq entity_size
 alien_shot_explosion:
     resq entity_size
