@@ -60,6 +60,8 @@ singleshot: equ 0
 right: equ 1
 left: equ 0
 
+explosion_lifetime: equ 30
+
 ; ---------------------------------------------------------------------
 ;   STRUCTURES
 ; ---------------------------------------------------------------------
@@ -565,7 +567,7 @@ main:
     sub eax, cannon_shot_explosion_width / 2
     mov [cannon_shot_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [cannon_shot_explosion + entity.alive], true
-    mov byte [cannon_shot_explosion + entity.lifetime], 30
+    mov byte [cannon_shot_explosion + entity.lifetime], explosion_lifetime
     jmp .update_cannon_shot_end
 .move_cannon_shot_end:
 
@@ -590,7 +592,7 @@ main:
     add ecx, [rax + entity.dstrect + SDL_Rect.y]
     mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_explosion + entity.alive], true
-    mov byte [alien_explosion + entity.lifetime], 30
+    mov byte [alien_explosion + entity.lifetime], explosion_lifetime
     play_sound alien_explosion_sound, singleshot
     jmp .update_cannon_shot_end
 .handle_cannon_shot_collision_aliens_end:
@@ -611,7 +613,7 @@ main:
     add ecx, [saucer + entity.dstrect + SDL_Rect.y]
     mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [saucer_explosion + entity.alive], true
-    mov byte [saucer_explosion + entity.lifetime], 30
+    mov byte [saucer_explosion + entity.lifetime], explosion_lifetime
     play_sound saucer_explosion_sound, singleshot
 .handle_cannon_shot_collision_saucer_end:
 
@@ -882,20 +884,20 @@ move_animate_alien_shot_func:
     sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
     mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [alien_shot_explosion + entity.alive], true
-    mov byte [alien_shot_explosion + entity.lifetime], 30
-    jmp .end
+    mov byte [alien_shot_explosion + entity.lifetime], explosion_lifetime
+    jmp .animate_end
 .move_end:
 
     ; animate
     dec byte [alien_shot_animation_timer]
-    jnz .end
+    jnz .animate_end
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
     add dword [rcx + entity.srcrect + SDL_Rect.x], alien_shot_width
     cmp dword [rcx + entity.srcrect + SDL_Rect.x], alien_shot_width * 4
-    jne .end
+    jne .animate_end
     mov dword [rcx + entity.srcrect + SDL_Rect.x], 0
+.animate_end:
 
-.end:
     ret
 
 ; inputs:
