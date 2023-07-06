@@ -339,22 +339,21 @@ main:
     set_entity_srcrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
     set_entity_dstrect alien_shot_explosion, 0, screen_height - alien_shot_explosion_height, alien_shot_explosion_width, alien_shot_explosion_height
     mov byte [alien_shot_explosion + entity.alive], false
-    mov byte [alien_shot_explosion + entity.lifetime], infinite
+    mov byte [alien_shot_explosion + entity.lifetime], 0
 
     ; create shelters
     mov rcx, shelters
-    mov r8d, 32
-    mov dl, shelters_count
+    mov edx, 32
 .create_shelter:
     set_entity_texture rcx, shelter_texture
     set_entity_srcrect rcx, 0, 0, shelter_width, shelter_height
-    set_entity_dstrect rcx, r8d, 192, shelter_width, shelter_height
+    set_entity_dstrect rcx, edx, 192, shelter_width, shelter_height
     mov byte [rcx + entity.alive], true
     mov byte [rcx + entity.lifetime], infinite
     add rcx, entity_size
-    add r8d, shelter_width + 23
-    dec dl
-    jnz .create_shelter
+    add edx, shelter_width + 23
+    cmp rcx, shelters + entity_size * shelters_count
+    jne .create_shelter
 
     ; create saucer
     set_entity_texture saucer, saucer_texture
@@ -452,7 +451,6 @@ main:
     jne .get_current_alien_loop_check
     mov qword [current_alien], aliens - entity_size
     mov rax, aliens
-    mov cl, aliens_count
     cmp byte [aliens_moving_direction], right
     je .check_aliens_right
 .check_aliens_left:
@@ -465,8 +463,8 @@ main:
     jmp .get_current_alien
 .check_aliens_left_next:
     add rax, entity_size
-    dec cl
-    jnz .check_aliens_left
+    cmp rax, aliens + entity_size * aliens_count
+    jne .check_aliens_left
     jmp .get_current_alien
 .check_aliens_right:
     cmp byte [rax + entity.alive], false
@@ -480,8 +478,8 @@ main:
     jmp .get_current_alien
 .check_aliens_right_next:
     add rax, entity_size
-    dec cl
-    jnz .check_aliens_right
+    cmp rax, aliens + entity_size * aliens_count
+    jne .check_aliens_right
     jmp .get_current_alien
 .get_current_alien_loop_check:
     cmp byte [rax + entity.alive], false
@@ -631,7 +629,6 @@ main:
     xor r9b, r9b ; r9b = its column
     mov r10, aliens ; r10 = current alien
     xor r11b, r11b ; r11b = its column
-    mov cl, aliens_count
 .get_above_alien:
     cmp byte [r10 + entity.alive], false
     je .get_above_alien_next
@@ -642,11 +639,11 @@ main:
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     sub eax, [r8 + entity.dstrect + SDL_Rect.x]
     mul eax
-    mov esi, eax ; esi = horizontal squared distance between cannon and above alien
+    mov ecx, eax ; ecx = horizontal squared distance between cannon and above alien
     mov eax, [cannon + entity.dstrect + SDL_Rect.x]
     sub eax, [r10 + entity.dstrect + SDL_Rect.x]
     mul eax ; eax = horizontal squared distance between cannon and current alien
-    cmp esi, eax
+    cmp ecx, eax
     jbe .get_above_alien_next
 .get_above_alien_update:
     mov r8, r10
@@ -658,8 +655,8 @@ main:
     jne .get_above_alien_next_end
     xor r11b, r11b
 .get_above_alien_next_end:
-    dec cl
-    jnz .get_above_alien
+    cmp r10, aliens +  entity_size * aliens_count
+    jne .get_above_alien
 
     ; spawn alien shot 1
     mov eax, [r8 + entity.dstrect + SDL_Rect.w]
@@ -734,21 +731,19 @@ main:
 
     ; render aliens
     mov rsi, aliens
-    mov bl, aliens_count
 .render_alien:
     render_entity rsi
     add rsi, entity_size
-    dec bl
-    jnz .render_alien
+    cmp rsi, aliens + entity_size * aliens_count
+    jne .render_alien
 
     ; render shelters
     mov rsi, shelters
-    mov bl, shelters_count
 .render_shelter:
     render_entity rsi
     add rsi, entity_size
-    dec bl
-    jnz .render_shelter
+    cmp rsi, shelters + entity_size * shelters_count
+    jne .render_shelter
 
     ; update screen
     mov rcx, [renderer]
