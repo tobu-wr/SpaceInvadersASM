@@ -612,18 +612,40 @@ main:
     je .move_alien_shot
 
     ; get closest alien
-    ; todo
-    mov rax, aliens
+    mov r8, 0
+    mov rcx, aliens
+    mov dl, aliens_count
+.get_closest_alien:
+    cmp byte [rcx + entity.alive], false
+    je .get_closest_alien_next
+    test r8, r8
+    je .init_closest_alien
+    mov eax, [cannon + entity.dstrect + SDL_Rect.x]
+    sub eax, [r8 + entity.dstrect + SDL_Rect.x]
+    mul eax
+    mov r9d, eax
+    mov eax, [cannon + entity.dstrect + SDL_Rect.x]
+    sub eax, [rcx + entity.dstrect + SDL_Rect.x]
+    mul eax
+    cmp r9d, eax
+    cmova r8, rcx
+    jmp .get_closest_alien_next
+.init_closest_alien:
+    mov r8, rcx
+.get_closest_alien_next:
+    add rcx, entity_size
+    dec dl
+    jnz .get_closest_alien
 
     ; spawn alien shot
     mov dword [alien_shot + entity.srcrect + SDL_Rect.x], 0
-    mov ecx, [rax + entity.dstrect + SDL_Rect.w]
+    mov ecx, [r8 + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_shot_width
     sar ecx, 1
-    add ecx, [rax + entity.dstrect + SDL_Rect.x]
+    add ecx, [r8 + entity.dstrect + SDL_Rect.x]
     mov [alien_shot + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, [rax + entity.dstrect + SDL_Rect.y]
-    add ecx, [rax + entity.dstrect + SDL_Rect.h]
+    mov ecx, [r8 + entity.dstrect + SDL_Rect.y]
+    add ecx, [r8 + entity.dstrect + SDL_Rect.h]
     mov [alien_shot + entity.dstrect + SDL_Rect.y], ecx
     mov byte [alien_shot + entity.alive], true
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
@@ -633,7 +655,7 @@ main:
 .move_alien_shot:
     inc dword [alien_shot + entity.dstrect + SDL_Rect.y]
     cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
-    jb .move_alien_shot_end
+    jbe .move_alien_shot_end
     mov byte [alien_shot + entity.alive], false
     jmp .update_alien_shot_end
 .move_alien_shot_end:
@@ -651,6 +673,12 @@ main:
 .animate_alien_shot_end:
 
 .update_alien_shot_end:
+
+; ---------------------------------------------------------------------
+;   CHECK COLLISIONS
+; ---------------------------------------------------------------------
+
+    ; todo
 
 ; ---------------------------------------------------------------------
 ;   RENDERING
