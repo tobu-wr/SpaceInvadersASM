@@ -322,7 +322,7 @@ main:
     ; create alien shot explosion
     set_entity_texture alien_shot_explosion, alien_shot_explosion_texture
     set_entity_srcrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
-    set_entity_dstrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
+    set_entity_dstrect alien_shot_explosion, 0, screen_height - alien_shot_explosion_height, alien_shot_explosion_width, alien_shot_explosion_height
     mov byte [alien_shot_explosion + entity.alive], false
     mov byte [alien_shot_explosion + entity.lifetime], infinite
 
@@ -666,6 +666,11 @@ main:
     cmp dword [alien_shot + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_height
     jbe .move_alien_shot_end
     mov byte [alien_shot + entity.alive], false
+    mov eax, [alien_shot + entity.dstrect + SDL_Rect.x]
+    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
+    mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov byte [alien_shot_explosion + entity.alive], true
+    mov byte [alien_shot_explosion + entity.lifetime], 30
     jmp .update_alien_shot_end
 .move_alien_shot_end:
 
