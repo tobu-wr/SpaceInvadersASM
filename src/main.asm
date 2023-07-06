@@ -43,6 +43,7 @@ shelter_width: equ 22
 shelter_height: equ 16
 shelters_count: equ 4
 
+saucer_y: equ 41
 saucer_width: equ 16
 saucer_height: equ 7
 saucer_spawn_timer_reset_value: equ 0x600
@@ -178,8 +179,7 @@ section .text
 global main
 main:
     push rsi
-    push rbx
-    sub rsp, 56
+    sub rsp, 48
 
 ; ---------------------------------------------------------------------
 ;   INITIALIZATION
@@ -358,14 +358,14 @@ main:
     ; create saucer
     set_entity_texture saucer, saucer_texture
     set_entity_srcrect saucer, 0, 0, saucer_width, saucer_height
-    set_entity_dstrect saucer, 0, 41, saucer_width, saucer_height
+    set_entity_dstrect saucer, 0, saucer_y, saucer_width, saucer_height
     mov byte [saucer + entity.alive], false
     mov byte [saucer + entity.lifetime], infinite
 
     ; create saucer explosion
     set_entity_texture saucer_explosion, saucer_explosion_texture
     set_entity_srcrect saucer_explosion, 0, 0, saucer_explosion_width, saucer_explosion_height
-    set_entity_dstrect saucer_explosion, 0, 0, saucer_explosion_width, saucer_explosion_height
+    set_entity_dstrect saucer_explosion, 0, saucer_y - (saucer_explosion_height - saucer_height) / 2, saucer_explosion_width, saucer_explosion_height
     mov byte [saucer_explosion + entity.alive], false
     mov byte [saucer_explosion + entity.lifetime], 0
 
@@ -606,10 +606,6 @@ main:
     sub ecx, saucer_explosion_width / 2
     add ecx, [saucer + entity.dstrect + SDL_Rect.x]
     mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, saucer_height / 2
-    sub ecx, saucer_explosion_height / 2
-    add ecx, [saucer + entity.dstrect + SDL_Rect.y]
-    mov [saucer_explosion + entity.dstrect + SDL_Rect.y], ecx
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], explosion_lifetime
     play_sound saucer_explosion_sound, singleshot
@@ -655,7 +651,7 @@ main:
     jne .get_above_alien_next_end
     xor r11b, r11b
 .get_above_alien_next_end:
-    cmp r10, aliens +  entity_size * aliens_count
+    cmp r10, aliens + entity_size * aliens_count
     jne .get_above_alien
 
     ; spawn alien shot 1
@@ -688,7 +684,7 @@ main:
     ; todo
 
 .move_animate_alien_shot2:
-    move_animate_alien_shot alien_shot2
+    ;move_animate_alien_shot alien_shot2
 
 .update_alien_shot2_end:
 
@@ -703,7 +699,7 @@ main:
     ; todo
 
 .move_animate_alien_shot3:
-    move_animate_alien_shot alien_shot3
+    ;move_animate_alien_shot alien_shot3
 
 .update_alien_shot3_end:
 
@@ -813,8 +809,7 @@ main:
 
 .main_end:
     xor eax, eax
-    add rsp, 56
-    pop rbx
+    add rsp, 48
     pop rsi
     ret
 
