@@ -862,15 +862,11 @@ check_cannon_shot_collision_func:
 
 move_aliens_down:
     mov rax, aliens
-    mov cl, aliens_count
 .loop:
-    cmp byte [rax + entity.alive], false
-    je .next
     add dword [rax + entity.dstrect + SDL_Rect.y], 8
-.next:
     add rax, entity_size
-    dec cl
-    jnz .loop
+    cmp rax, aliens + entity_size * aliens_count
+    jne .loop
     ret
 
 ; input: rcx = alien shot
@@ -1102,6 +1098,10 @@ cannon_shot_number:
     db -1
 alien_shot_animation_timer:
     db alien_shot_animation_timer_reset_value
+random_column_table:
+    db 0, 4, 6, 1, 5, 2, 7, 10, 9, 3, 8
+random_column_table_cursor:
+    db 0
 
 section .bss
 window:
