@@ -449,7 +449,7 @@ main:
     mov rax, [current_alien]
 .get_current_alien_loop:
     add rax, entity_size
-    cmp rax, aliens + aliens_count * entity_size ; we went over all aliens?
+    cmp rax, aliens_end ; we went over all aliens?
     jne .get_current_alien_loop_check
     mov qword [current_alien], aliens - entity_size
     mov rax, aliens
@@ -711,6 +711,22 @@ main:
 ;   CHECK COLLISIONS
 ; ---------------------------------------------------------------------
 
+    ; cannon shot <> shelters
+    ; todo
+
+    ; cannon shot <> aliens
+    ; todo
+
+    ; cannon shot <> saucer
+    ; todo
+
+    ; cannon shot <> alien shot
+    ; todo
+
+    ; alien shot <> shelters
+    ; todo
+
+    ; alien shot <> cannon
     ; todo
 
 ; ---------------------------------------------------------------------
