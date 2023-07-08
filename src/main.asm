@@ -93,16 +93,10 @@ endstruc
     call move_animate_alien_shot_func
 %endmacro
 
-%macro spawn_random_alien_shot 1
-    mov rcx, %1 ; alien shot
-    call spawn_random_alien_shot_func
-%endmacro
-
-%macro spawn_alien_shot 3
+%macro spawn_random_alien_shot 2
     mov rcx, %1 ; alien shot
     mov rdx, %2 ; animation timer
-    mov r8, %3 ; alien
-    call spawn_alien_shot_func
+    call spawn_random_alien_shot_func
 %endmacro
 
 %macro create_alien_shot 2
@@ -669,7 +663,9 @@ main:
     cmp r10, aliens_end
     jne .get_above_alien
 
-    spawn_alien_shot alien_shot1, alien_shot1_animation_timer, r8
+    mov rcx, alien_shot1
+    mov rdx, alien_shot1_animation_timer
+    call spawn_alien_shot
     jmp .update_alien_shot1_end
 
 .move_animate_alien_shot1:
@@ -684,7 +680,7 @@ main:
     cmp byte [alien_shot2 + entity.alive], true
     je .move_animate_alien_shot2
 
-    ;spawn_random_alien_shot alien_shot2
+    spawn_random_alien_shot alien_shot2, alien_shot2_animation_timer
     jmp .update_alien_shot2_end
 
 .move_animate_alien_shot2:
@@ -702,7 +698,7 @@ main:
     cmp byte [saucer + entity.alive], true
     je .update_alien_shot3_end
 
-    ;spawn_random_alien_shot alien_shot3
+    spawn_random_alien_shot alien_shot3, alien_shot3_animation_timer
     jmp .update_alien_shot3_end
 
 .move_animate_alien_shot3:
@@ -910,9 +906,11 @@ move_animate_alien_shot_func:
 
     ret
 
-; input: rcx = alien shot
+; inputs:
+;   rcx = alien shot
+;   rdx = animation timer
 spawn_random_alien_shot_func:
-    ; get random alien
+    mov r8, rdx ; save animation timer
 .tata:
     inc byte [random_column_table_cursor]
     cmp byte [random_column_table_cursor], aliens_column_count
@@ -920,6 +918,7 @@ spawn_random_alien_shot_func:
     mov byte [random_column_table_cursor], 0
 .toto:
     movzx rax, byte [random_column_table_cursor]
+    movzx rax, byte [random_column_table + rax]
     mov rdx, entity_size
     mul rdx
     add rax, aliens
@@ -931,14 +930,16 @@ spawn_random_alien_shot_func:
     jb .loop
     jmp .tata
 .loop_end:
-    ;spawn_alien_shot rcx, rax
+    mov rdx, r8
+    mov r8, rax
+    call spawn_alien_shot
     ret
 
 ; inputs:
 ;   rcx = alien shot
 ;   rdx = animation timer
 ;   r8 = alien
-spawn_alien_shot_func:
+spawn_alien_shot:
     mov eax, [r8 + entity.dstrect + SDL_Rect.w]
     sub eax, alien_shot_width
     sar eax, 1
