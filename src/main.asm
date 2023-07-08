@@ -588,6 +588,7 @@ main:
     check_cannon_shot_collision aliens, aliens_end
     cmp rax, aliens_end
     je .handle_cannon_shot_collision_aliens_end
+    dec byte [aliens_alive_count]
     mov byte [rax + entity.alive], false
     mov ecx, [rax + entity.dstrect + SDL_Rect.w]
     sub ecx, alien_explosion_width
