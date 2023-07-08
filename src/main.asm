@@ -92,9 +92,14 @@ endstruc
     call move_animate_alien_shot_func
 %endmacro
 
+%macro spawn_random_alien_shot 1
+    mov rcx, %1 ; alien shot
+    call spawn_random_alien_shot_func
+%endmacro
+
 %macro spawn_alien_shot 2
-    mov rcx, %1 ; alien
-    mov rdx, %2 ; alien shot
+    mov rcx, %1 ; alien shot
+    mov rdx, %2 ; alien
     call spawn_alien_shot_func
 %endmacro
 
@@ -662,8 +667,7 @@ main:
     cmp r10, aliens_end
     jne .get_above_alien
 
-    ; spawn alien shot 1
-    spawn_alien_shot r8, alien_shot1
+    spawn_alien_shot alien_shot1, r8
     jmp .update_alien_shot1_end
 
 .move_animate_alien_shot1:
@@ -678,9 +682,7 @@ main:
     cmp byte [alien_shot2 + entity.alive], true
     je .move_animate_alien_shot2
 
-    ; spawn alien shot 2
-    ;get_random_alien
-    ;spawn_alien_shot
+    spawn_random_alien_shot alien_shot2
     jmp .update_alien_shot2_end
 
 .move_animate_alien_shot2:
@@ -695,9 +697,7 @@ main:
     cmp byte [alien_shot3 + entity.alive], true
     je .move_animate_alien_shot3
 
-    ; spawn alien shot 3
-    ;get_random_alien
-    ;spawn_alien_shot
+    spawn_random_alien_shot alien_shot3
     jmp .update_alien_shot3_end
 
 .move_animate_alien_shot3:
@@ -903,21 +903,39 @@ move_animate_alien_shot_func:
 
     ret
 
+; input: rcx = alien shot
+spawn_random_alien_shot_func:
+    ; get random alien
+;     inc byte [random_column_table_cursor]
+;     cmp byte [random_column_table_cursor], aliens_column_count
+;     mov al, 0
+;     cmove byte [random_column_table_cursor], al
+;     mov rax, aliens
+    
+; .find_alien_loop:
+
+
+;     add rax, entity_size
+;     cmp rax, aliens_end
+;     jne .find_alien_loop
+
+    ret
+
 ; inputs:
-;   rcx = alien
-;   rdx = alien shot
+;   rcx = alien shot
+;   rdx = alien
 spawn_alien_shot_func:
-    mov eax, [rcx + entity.dstrect + SDL_Rect.w]
+    mov eax, [rdx + entity.dstrect + SDL_Rect.w]
     sub eax, alien_shot_width
     sar eax, 1
-    add eax, [rcx + entity.dstrect + SDL_Rect.x]
-    mov [rdx + entity.dstrect + SDL_Rect.x], eax
-    mov eax, [rcx + entity.dstrect + SDL_Rect.y]
-    add eax, [rcx + entity.dstrect + SDL_Rect.h]
-    mov [rdx + entity.dstrect + SDL_Rect.y], eax
-    mov byte [rdx + entity.alive], true
+    add eax, [rdx + entity.dstrect + SDL_Rect.x]
+    mov [rcx + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [rdx + entity.dstrect + SDL_Rect.y]
+    add eax, [rdx + entity.dstrect + SDL_Rect.h]
+    mov [rcx + entity.dstrect + SDL_Rect.y], eax
+    mov byte [rcx + entity.alive], true
     mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    mov dword [rdx + entity.srcrect + SDL_Rect.x], 0
+    mov dword [rcx + entity.srcrect + SDL_Rect.x], 0
     ret
 
 ; inputs:
@@ -1125,7 +1143,7 @@ alien_shot_animation_timer:
 random_column_table:
     db 0, 4, 6, 1, 5, 2, 7, 10, 9, 3, 8
 random_column_table_cursor:
-    db 0
+    db -1
 
 section .bss
 window:
