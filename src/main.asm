@@ -911,27 +911,27 @@ move_animate_alien_shot_func:
 ;   rdx = animation timer
 spawn_random_alien_shot_func:
     mov r8, rdx ; save animation timer
-.tata:
+.update_random_column:
     inc byte [random_column_table_cursor]
     cmp byte [random_column_table_cursor], aliens_column_count
-    jne .toto
+    jne .get_random_column
     mov byte [random_column_table_cursor], 0
-.toto:
+.get_random_column:
     movzx rax, byte [random_column_table_cursor]
     movzx rax, byte [random_column_table + rax]
     mov rdx, entity_size
     mul rdx
     add rax, aliens
-.loop:
+.check_alien:
     cmp byte [rax + entity.alive], true
-    je .loop_end
+    je .alien_found
     add rax, aliens_column_count * entity_size
     cmp rax, aliens_end
-    jb .loop
-    jmp .tata
-.loop_end:
-    mov rdx, r8
-    mov r8, rax
+    jb .check_alien
+    jmp .update_random_column
+.alien_found:
+    mov rdx, r8 ; animation timer
+    mov r8, rax ; alien
     call spawn_alien_shot
     ret
 
