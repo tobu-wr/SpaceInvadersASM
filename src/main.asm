@@ -88,8 +88,14 @@ endstruc
 %endmacro
 
 %macro move_animate_alien_shot 1
-    mov rcx, %1
+    mov rcx, %1 ; alien shot
     call move_animate_alien_shot_func
+%endmacro
+
+%macro spawn_alien_shot 2
+    mov rcx, %1 ; alien
+    mov rdx, %2 ; alien shot
+    call spawn_alien_shot_func
 %endmacro
 
 %macro create_alien_shot 2
@@ -657,17 +663,7 @@ main:
     jne .get_above_alien
 
     ; spawn alien shot 1
-    mov eax, [r8 + entity.dstrect + SDL_Rect.w]
-    sub eax, alien_shot_width
-    sar eax, 1
-    add eax, [r8 + entity.dstrect + SDL_Rect.x]
-    mov [alien_shot1 + entity.dstrect + SDL_Rect.x], eax
-    mov eax, [r8 + entity.dstrect + SDL_Rect.y]
-    add eax, [r8 + entity.dstrect + SDL_Rect.h]
-    mov [alien_shot1 + entity.dstrect + SDL_Rect.y], eax
-    mov byte [alien_shot1 + entity.alive], true
-    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
-    mov dword [alien_shot1 + entity.srcrect + SDL_Rect.x], 0
+    spawn_alien_shot r8, alien_shot1
     jmp .update_alien_shot1_end
 
 .move_animate_alien_shot1:
@@ -683,7 +679,8 @@ main:
     je .move_animate_alien_shot2
 
     ; spawn alien shot 2
-    ; todo
+    ;get_random_alien
+    ;spawn_alien_shot
     jmp .update_alien_shot2_end
 
 .move_animate_alien_shot2:
@@ -699,7 +696,8 @@ main:
     je .move_animate_alien_shot3
 
     ; spawn alien shot 3
-    ; todo
+    ;get_random_alien
+    ;spawn_alien_shot
     jmp .update_alien_shot3_end
 
 .move_animate_alien_shot3:
@@ -720,13 +718,13 @@ main:
     ; cannon shot <> saucer
     ; todo
 
-    ; cannon shot <> alien shot
+    ; cannon shot <> alien shots
     ; todo
 
-    ; alien shot <> shelters
+    ; alien shots <> shelters
     ; todo
 
-    ; alien shot <> cannon
+    ; alien shots <> cannon
     ; todo
 
 ; ---------------------------------------------------------------------
@@ -903,6 +901,23 @@ move_animate_alien_shot_func:
     mov dword [rcx + entity.srcrect + SDL_Rect.x], 0
 .animate_end:
 
+    ret
+
+; inputs:
+;   rcx = alien
+;   rdx = alien shot
+spawn_alien_shot_func:
+    mov eax, [rcx + entity.dstrect + SDL_Rect.w]
+    sub eax, alien_shot_width
+    sar eax, 1
+    add eax, [rcx + entity.dstrect + SDL_Rect.x]
+    mov [rdx + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [rcx + entity.dstrect + SDL_Rect.y]
+    add eax, [rcx + entity.dstrect + SDL_Rect.h]
+    mov [rdx + entity.dstrect + SDL_Rect.y], eax
+    mov byte [rdx + entity.alive], true
+    mov byte [alien_shot_animation_timer], alien_shot_animation_timer_reset_value
+    mov dword [rdx + entity.srcrect + SDL_Rect.x], 0
     ret
 
 ; inputs:
