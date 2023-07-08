@@ -696,6 +696,9 @@ main:
 
     cmp byte [alien_shot3 + entity.alive], true
     je .move_animate_alien_shot3
+    
+    cmp byte [saucer + entity.alive], true
+    je .move_animate_alien_shot3
 
     spawn_random_alien_shot alien_shot3
     jmp .update_alien_shot3_end
