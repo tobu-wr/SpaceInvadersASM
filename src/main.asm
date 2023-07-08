@@ -35,6 +35,7 @@ alien_explosion_height: equ 7
 
 alien_shot_width: equ 3
 alien_shot_height: equ 7
+alien_shot_spawn_timer_reset_value: equ 0x90
 alien_shot_animation_timer_reset_value: equ 30
 
 alien_shot_explosion_width: equ 6
@@ -451,12 +452,12 @@ main:
 ;   ALIEN UPDATE
 ; ---------------------------------------------------------------------
 
-    ; get current alien ie. next one alive
+    ; get current alien
 .get_current_alien:
     mov rax, [current_alien]
 .get_current_alien_loop:
     add rax, entity_size
-    cmp rax, aliens_end ; we went over all aliens?
+    cmp rax, aliens_end
     jne .get_current_alien_loop_check
     mov qword [current_alien], aliens - entity_size
     mov rax, aliens
@@ -663,11 +664,13 @@ main:
     cmp r10, aliens_end
     jne .get_above_alien
 
+    ; spawn alien shot
     mov rcx, alien_shot1
     mov rdx, alien_shot1_animation_timer
     call spawn_alien_shot
     jmp .update_alien_shot1_end
 
+    ; move alien shot
 .move_animate_alien_shot1:
     move_animate_alien_shot alien_shot1, alien_shot1_animation_timer
 
@@ -679,10 +682,14 @@ main:
 
     cmp byte [alien_shot2 + entity.alive], true
     je .move_animate_alien_shot2
+    cmp byte [aliens_alive_count], 1
+    je .update_alien_shot2_end
 
+    ; spawn alien shot
     spawn_random_alien_shot alien_shot2, alien_shot2_animation_timer
     jmp .update_alien_shot2_end
 
+    ; move alien shot
 .move_animate_alien_shot2:
     move_animate_alien_shot alien_shot2, alien_shot2_animation_timer
 
@@ -694,13 +701,14 @@ main:
 
     cmp byte [alien_shot3 + entity.alive], true
     je .move_animate_alien_shot3
-
     cmp byte [saucer + entity.alive], true
     je .update_alien_shot3_end
 
+    ; spawn alien shot
     spawn_random_alien_shot alien_shot3, alien_shot3_animation_timer
     jmp .update_alien_shot3_end
 
+    ; move alien shot
 .move_animate_alien_shot3:
     move_animate_alien_shot alien_shot3, alien_shot3_animation_timer
 
@@ -1141,6 +1149,8 @@ saucer_explosion_sound_file:
     db "res/saucer_explosion.wav", 0
 space_key_state:
     db 0
+aliens_alive_count:
+    db aliens_count
 current_alien:
     dq aliens - entity_size
 aliens_moving_direction:
@@ -1153,6 +1163,8 @@ saucer_moving_direction:
     db right
 cannon_shot_number:
     db -1
+alien_shot_spawn_timer:
+    db alien_shot_spawn_timer_reset_value
 alien_shot1_animation_timer:
     db alien_shot_animation_timer_reset_value
 alien_shot2_animation_timer:
