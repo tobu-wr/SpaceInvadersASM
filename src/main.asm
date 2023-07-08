@@ -83,7 +83,7 @@ endstruc
 
 %macro check_cannon_shot_collision 2
     mov rcx, %1 ; entities
-    mov dl, %2 ; count
+    mov rdx, %2 ; end
     call check_cannon_shot_collision_func
 %endmacro
 
@@ -572,13 +572,13 @@ main:
 .move_cannon_shot_end:
 
     ; handle cannon shot collision with shelters
-    check_cannon_shot_collision shelters, shelters_count
-    test rax, rax
+    check_cannon_shot_collision shelters, shelters_end
+    cmp rax, shelters_end
     jne .update_cannon_shot_end
 
     ; handle cannon shot collision with aliens
-    check_cannon_shot_collision aliens, aliens_count
-    test rax, rax
+    check_cannon_shot_collision aliens, aliens_end
+    cmp rax, aliens_end
     je .handle_cannon_shot_collision_aliens_end
     mov byte [rax + entity.alive], false
     mov ecx, [rax + entity.dstrect + SDL_Rect.w]
@@ -598,8 +598,8 @@ main:
 .handle_cannon_shot_collision_aliens_end:
 
     ; handle cannon shot collision with saucer
-    check_cannon_shot_collision saucer, 1
-    test rax, rax
+    check_cannon_shot_collision saucer, saucer + entity_size
+    cmp rax, saucer + entity_size
     je .handle_cannon_shot_collision_saucer_end
     mov byte [saucer + entity.alive], false
     stop_sound saucer_sound_channel
@@ -839,35 +839,34 @@ main:
 
 ; inputs:
 ;   rcx = entities
-;   dl = count
+;   rdx = end
 ; output:
-;   rax = collided entity
+;   rax = collided entity, rdx otherwise
 check_cannon_shot_collision_func:
+    mov rax, rcx
 .loop:
-    cmp byte [rcx + entity.alive], false
+    cmp byte [rax + entity.alive], false
     je .next
-    mov eax, [rcx + entity.dstrect + SDL_Rect.x]
-    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.x]
+    mov ecx, [rax + entity.dstrect + SDL_Rect.x]
+    cmp ecx, [cannon_shot + entity.dstrect + SDL_Rect.x]
     ja .next
-    add eax, [rcx + entity.dstrect + SDL_Rect.w]
-    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.x]
+    add ecx, [rax + entity.dstrect + SDL_Rect.w]
+    cmp ecx, [cannon_shot + entity.dstrect + SDL_Rect.x]
     jbe .next
-    mov eax, [cannon_shot + entity.dstrect + SDL_Rect.y]
-    add eax, cannon_shot_height
-    cmp eax, [rcx + entity.dstrect + SDL_Rect.y]
+    mov ecx, [cannon_shot + entity.dstrect + SDL_Rect.y]
+    add ecx, cannon_shot_height
+    cmp ecx, [rax + entity.dstrect + SDL_Rect.y]
     jbe .next
-    mov eax, [rcx + entity.dstrect + SDL_Rect.y]
-    add eax, [rcx + entity.dstrect + SDL_Rect.h]
-    cmp eax, [cannon_shot + entity.dstrect + SDL_Rect.y]
+    mov ecx, [rax + entity.dstrect + SDL_Rect.y]
+    add ecx, [rax + entity.dstrect + SDL_Rect.h]
+    cmp ecx, [cannon_shot + entity.dstrect + SDL_Rect.y]
     jbe .next
     mov byte [cannon_shot + entity.alive], false
-    mov rax, rcx
     ret
 .next:
-    add rcx, entity_size
-    dec dl
-    jnz .loop
-    xor rax, rax
+    add rax, entity_size
+    cmp rax, rdx
+    jne .loop
     ret
 
 move_aliens_down:
