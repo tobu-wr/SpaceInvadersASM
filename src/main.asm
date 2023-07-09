@@ -88,9 +88,10 @@ endstruc
     call check_cannon_shot_collision_func
 %endmacro
 
-%macro move_animate_alien_shot 2
+%macro move_animate_alien_shot 3
     mov rcx, %1 ; alien shot
     mov rdx, %2 ; animation timer
+    mov r8, %3 ; spawn timer
     call move_animate_alien_shot_func
 %endmacro
 
@@ -521,15 +522,10 @@ main:
 
     cmp byte [saucer + entity.alive], true
     je .move_saucer
-
-    ; spawn saucer
-    cmp word [saucer_spawn_timer], 0
-    je .update_saucer_spawn_timer_end
     dec word [saucer_spawn_timer]
     jnz .move_saucer_end
-.update_saucer_spawn_timer_end:
-    cmp byte [alien_shot3 + entity.alive], true
-    je .move_saucer_end
+
+    ; spawn saucer
     mov byte [saucer + entity.alive], true
     play_sound saucer_sound, infinite
     mov [saucer_sound_channel], eax
@@ -635,6 +631,8 @@ main:
 
     cmp byte [alien_shot1 + entity.alive], true
     je .move_animate_alien_shot1
+    dec word [alien_shot1_spawn_timer]
+    jnz .move_animate_alien_shot1_end
 
     ; get above alien
     xor r8, r8 ; r8 = above alien
@@ -678,7 +676,7 @@ main:
 
     ; move alien shot
 .move_animate_alien_shot1:
-    move_animate_alien_shot alien_shot1, alien_shot1_animation_timer
+    move_animate_alien_shot alien_shot1, alien_shot1_animation_timer, alien_shot1_spawn_timer
 .move_animate_alien_shot1_end:
 
 ; ---------------------------------------------------------------------
@@ -687,16 +685,16 @@ main:
 
     cmp byte [alien_shot2 + entity.alive], true
     je .move_animate_alien_shot2
+    dec word [alien_shot2_spawn_timer]
+    jnz .move_animate_alien_shot2_end
 
     ; spawn alien shot
-    cmp byte [aliens_alive_count], 1
-    je .move_animate_alien_shot2_end
     spawn_random_alien_shot alien_shot2, alien_shot2_animation_timer
     jmp .move_animate_alien_shot2_end
 
     ; move alien shot
 .move_animate_alien_shot2:
-    move_animate_alien_shot alien_shot2, alien_shot2_animation_timer
+    move_animate_alien_shot alien_shot2, alien_shot2_animation_timer, alien_shot2_spawn_timer
 .move_animate_alien_shot2_end:
 
 ; ---------------------------------------------------------------------
@@ -705,16 +703,16 @@ main:
 
     cmp byte [alien_shot3 + entity.alive], true
     je .move_animate_alien_shot3
+    dec word [alien_shot3_spawn_timer]
+    jnz .move_animate_alien_shot3_end
 
     ; spawn alien shot
-    cmp byte [saucer + entity.alive], true
-    je .move_animate_alien_shot3_end
     spawn_random_alien_shot alien_shot3, alien_shot3_animation_timer
     jmp .move_animate_alien_shot3_end
 
     ; move alien shot
 .move_animate_alien_shot3:
-    move_animate_alien_shot alien_shot3, alien_shot3_animation_timer
+    move_animate_alien_shot alien_shot3, alien_shot3_animation_timer, alien_shot3_spawn_timer
 .move_animate_alien_shot3_end:
 
 ; ---------------------------------------------------------------------
@@ -891,6 +889,7 @@ move_aliens_down:
 ; inputs:
 ;   rcx = alien shot
 ;   rdx = animation timer
+;   r8 = spawn timer
 move_animate_alien_shot_func:
     ; move
     inc dword [rcx + entity.dstrect + SDL_Rect.y]
@@ -902,6 +901,7 @@ move_animate_alien_shot_func:
     mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [alien_shot_explosion + entity.alive], true
     mov byte [alien_shot_explosion + entity.lifetime], explosion_lifetime
+    mov word [r8], alien_shot_spawn_timer_reset_value
     jmp .animate_end
 .move_end:
 
@@ -1166,8 +1166,12 @@ saucer_moving_direction:
     db right
 cannon_shot_number:
     db -1
-alien_shot_spawn_timer:
-    db alien_shot_spawn_timer_reset_value
+alien_shot1_spawn_timer:
+    dw alien_shot_spawn_timer_reset_value
+alien_shot2_spawn_timer:
+    dw alien_shot_spawn_timer_reset_value * 2
+alien_shot3_spawn_timer:
+    dw alien_shot_spawn_timer_reset_value * 3
 alien_shot1_animation_timer:
     db alien_shot_animation_timer_reset_value
 alien_shot2_animation_timer:
