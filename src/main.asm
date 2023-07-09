@@ -88,10 +88,11 @@ endstruc
     call check_cannon_shot_collision_func
 %endmacro
 
-%macro move_animate_alien_shot 3
+%macro move_animate_alien_shot 4
     mov rcx, %1 ; alien shot
     mov rdx, %2 ; animation timer
     mov r8, %3 ; spawn timer
+    mov r9, %4 ; explosion
     call move_animate_alien_shot_func
 %endmacro
 
@@ -99,6 +100,14 @@ endstruc
     mov rcx, %1 ; alien shot
     mov rdx, %2 ; animation timer
     call spawn_random_alien_shot_func
+%endmacro
+
+%macro create_alien_shot_explosion 1
+    set_entity_texture %1, alien_shot_explosion_texture
+    set_entity_srcrect %1, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
+    set_entity_dstrect %1, 0, screen_height - alien_shot_explosion_height, alien_shot_explosion_width, alien_shot_explosion_height
+    mov byte [%1 + entity.alive], false
+    mov byte [%1 + entity.lifetime], 0
 %endmacro
 
 %macro create_alien_shot 2
@@ -345,12 +354,10 @@ main:
     create_alien_shot alien_shot2, alien_shot2_texture
     create_alien_shot alien_shot3, alien_shot3_texture
 
-    ; create alien shot explosion
-    set_entity_texture alien_shot_explosion, alien_shot_explosion_texture
-    set_entity_srcrect alien_shot_explosion, 0, 0, alien_shot_explosion_width, alien_shot_explosion_height
-    set_entity_dstrect alien_shot_explosion, 0, screen_height - alien_shot_explosion_height, alien_shot_explosion_width, alien_shot_explosion_height
-    mov byte [alien_shot_explosion + entity.alive], false
-    mov byte [alien_shot_explosion + entity.lifetime], 0
+    ; create alien shot explosions
+    create_alien_shot_explosion alien_shot1_explosion
+    create_alien_shot_explosion alien_shot2_explosion
+    create_alien_shot_explosion alien_shot3_explosion
 
     ; create shelters
     mov rcx, shelters
@@ -676,7 +683,7 @@ main:
 
     ; move alien shot
 .move_animate_alien_shot1:
-    move_animate_alien_shot alien_shot1, alien_shot1_animation_timer, alien_shot1_spawn_timer
+    move_animate_alien_shot alien_shot1, alien_shot1_animation_timer, alien_shot1_spawn_timer, alien_shot1_explosion
 .move_animate_alien_shot1_end:
 
 ; ---------------------------------------------------------------------
@@ -694,7 +701,7 @@ main:
 
     ; move alien shot
 .move_animate_alien_shot2:
-    move_animate_alien_shot alien_shot2, alien_shot2_animation_timer, alien_shot2_spawn_timer
+    move_animate_alien_shot alien_shot2, alien_shot2_animation_timer, alien_shot2_spawn_timer, alien_shot2_explosion
 .move_animate_alien_shot2_end:
 
 ; ---------------------------------------------------------------------
@@ -712,7 +719,7 @@ main:
 
     ; move alien shot
 .move_animate_alien_shot3:
-    move_animate_alien_shot alien_shot3, alien_shot3_animation_timer, alien_shot3_spawn_timer
+    move_animate_alien_shot alien_shot3, alien_shot3_animation_timer, alien_shot3_spawn_timer, alien_shot3_explosion
 .move_animate_alien_shot3_end:
 
 ; ---------------------------------------------------------------------
@@ -749,7 +756,9 @@ main:
     render_entity alien_shot1
     render_entity alien_shot2
     render_entity alien_shot3
-    render_entity alien_shot_explosion
+    render_entity alien_shot1_explosion
+    render_entity alien_shot2_explosion
+    render_entity alien_shot3_explosion
     render_entity saucer
     render_entity saucer_explosion
 
@@ -890,6 +899,7 @@ move_aliens_down:
 ;   rcx = alien shot
 ;   rdx = animation timer
 ;   r8 = spawn timer
+;   r9 = explosion
 move_animate_alien_shot_func:
     ; move
     inc dword [rcx + entity.dstrect + SDL_Rect.y]
@@ -898,9 +908,9 @@ move_animate_alien_shot_func:
     mov byte [rcx + entity.alive], false
     mov eax, [rcx + entity.dstrect + SDL_Rect.x]
     sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
-    mov [alien_shot_explosion + entity.dstrect + SDL_Rect.x], eax
-    mov byte [alien_shot_explosion + entity.alive], true
-    mov byte [alien_shot_explosion + entity.lifetime], explosion_lifetime
+    mov [r9 + entity.dstrect + SDL_Rect.x], eax
+    mov byte [r9 + entity.alive], true
+    mov byte [r9 + entity.lifetime], explosion_lifetime
     mov word [r8], alien_shot_spawn_timer_reset_value
     jmp .animate_end
 .move_end:
@@ -1242,7 +1252,11 @@ alien_shot2:
     resq entity_size
 alien_shot3:
     resq entity_size
-alien_shot_explosion:
+alien_shot1_explosion:
+    resq entity_size
+alien_shot2_explosion:
+    resq entity_size
+alien_shot3_explosion:
     resq entity_size
 shelters:
     resq entity_size * shelters_count
