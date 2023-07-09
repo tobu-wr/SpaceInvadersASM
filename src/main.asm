@@ -521,10 +521,15 @@ main:
 
     cmp byte [saucer + entity.alive], true
     je .move_saucer
-    dec word [saucer_spawn_timer]
-    jnz .move_saucer_end
 
     ; spawn saucer
+    cmp word [saucer_spawn_timer], 0
+    je .update_saucer_spawn_timer_end
+    dec word [saucer_spawn_timer]
+    jnz .move_saucer_end
+.update_saucer_spawn_timer_end:
+    cmp byte [alien_shot3 + entity.alive], true
+    je .move_saucer_end
     mov byte [saucer + entity.alive], true
     play_sound saucer_sound, infinite
     mov [saucer_sound_channel], eax
@@ -669,13 +674,12 @@ main:
     mov rcx, alien_shot1
     mov rdx, alien_shot1_animation_timer
     call spawn_alien_shot
-    jmp .update_alien_shot1_end
+    jmp .move_animate_alien_shot1_end
 
     ; move alien shot
 .move_animate_alien_shot1:
     move_animate_alien_shot alien_shot1, alien_shot1_animation_timer
-
-.update_alien_shot1_end:
+.move_animate_alien_shot1_end:
 
 ; ---------------------------------------------------------------------
 ;   ALIEN SHOT 2 UPDATE
@@ -683,18 +687,17 @@ main:
 
     cmp byte [alien_shot2 + entity.alive], true
     je .move_animate_alien_shot2
-    cmp byte [aliens_alive_count], 1
-    je .update_alien_shot2_end
 
     ; spawn alien shot
+    cmp byte [aliens_alive_count], 1
+    je .move_animate_alien_shot2_end
     spawn_random_alien_shot alien_shot2, alien_shot2_animation_timer
-    jmp .update_alien_shot2_end
+    jmp .move_animate_alien_shot2_end
 
     ; move alien shot
 .move_animate_alien_shot2:
     move_animate_alien_shot alien_shot2, alien_shot2_animation_timer
-
-.update_alien_shot2_end:
+.move_animate_alien_shot2_end:
 
 ; ---------------------------------------------------------------------
 ;   ALIEN SHOT 3 UPDATE
@@ -702,18 +705,17 @@ main:
 
     cmp byte [alien_shot3 + entity.alive], true
     je .move_animate_alien_shot3
-    cmp byte [saucer + entity.alive], true
-    je .update_alien_shot3_end
 
     ; spawn alien shot
+    cmp byte [saucer + entity.alive], true
+    je .move_animate_alien_shot3_end
     spawn_random_alien_shot alien_shot3, alien_shot3_animation_timer
-    jmp .update_alien_shot3_end
+    jmp .move_animate_alien_shot3_end
 
     ; move alien shot
 .move_animate_alien_shot3:
     move_animate_alien_shot alien_shot3, alien_shot3_animation_timer
-
-.update_alien_shot3_end:
+.move_animate_alien_shot3_end:
 
 ; ---------------------------------------------------------------------
 ;   CHECK COLLISIONS
