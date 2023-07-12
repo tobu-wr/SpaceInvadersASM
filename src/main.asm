@@ -727,7 +727,53 @@ main:
 .cannon_shot_collision_saucer_end:
 
     ; cannon shot <> alien shots
-    ; todo
+    check_cannon_shot_collision alien_shot1, alien_shot1 + entity_size
+    cmp rax, alien_shot1 + entity_size
+    je .cannon_shot_collision_alien_shot1_end
+    mov byte [alien_shot1 + entity.alive], false
+    mov eax, [alien_shot1 + entity.dstrect + SDL_Rect.x]
+    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
+    mov [alien_shot1_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [alien_shot1 + entity.dstrect + SDL_Rect.y]
+    sub eax, (alien_shot_explosion_height - alien_shot_height) / 2
+    mov [alien_shot1_explosion + entity.dstrect + SDL_Rect.y], eax
+    mov byte [alien_shot1_explosion + entity.alive], true
+    mov byte [alien_shot1_explosion + entity.lifetime], explosion_lifetime
+    mov word [alien_shot1_spawn_timer], alien_shot_spawn_timer_reset_value
+    jmp .cannon_shot_collision_end
+.cannon_shot_collision_alien_shot1_end:
+
+    check_cannon_shot_collision alien_shot2, alien_shot2 + entity_size
+    cmp rax, alien_shot2 + entity_size
+    je .cannon_shot_collision_alien_shot2_end
+    mov byte [alien_shot2 + entity.alive], false
+    mov eax, [alien_shot2 + entity.dstrect + SDL_Rect.x]
+    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
+    mov [alien_shot2_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [alien_shot2 + entity.dstrect + SDL_Rect.y]
+    sub eax, (alien_shot_explosion_height - alien_shot_height) / 2
+    mov [alien_shot2_explosion + entity.dstrect + SDL_Rect.y], eax
+    mov byte [alien_shot2_explosion + entity.alive], true
+    mov byte [alien_shot2_explosion + entity.lifetime], explosion_lifetime
+    mov word [alien_shot2_spawn_timer], alien_shot_spawn_timer_reset_value
+    jmp .cannon_shot_collision_end
+.cannon_shot_collision_alien_shot2_end:
+
+    check_cannon_shot_collision alien_shot3, alien_shot3 + entity_size
+    cmp rax, alien_shot3 + entity_size
+    je .cannon_shot_collision_alien_shot3_end
+    mov byte [alien_shot3 + entity.alive], false
+    mov eax, [alien_shot3 + entity.dstrect + SDL_Rect.x]
+    sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
+    mov [alien_shot3_explosion + entity.dstrect + SDL_Rect.x], eax
+    mov eax, [alien_shot3 + entity.dstrect + SDL_Rect.y]
+    sub eax, (alien_shot_explosion_height - alien_shot_height) / 2
+    mov [alien_shot3_explosion + entity.dstrect + SDL_Rect.y], eax
+    mov byte [alien_shot3_explosion + entity.alive], true
+    mov byte [alien_shot3_explosion + entity.lifetime], explosion_lifetime
+    mov word [alien_shot3_spawn_timer], alien_shot_spawn_timer_reset_value
+    jmp .cannon_shot_collision_end
+.cannon_shot_collision_alien_shot3_end:
 
 .cannon_shot_collision_end:
 
@@ -902,6 +948,7 @@ move_animate_alien_shot_func:
     mov eax, [rcx + entity.dstrect + SDL_Rect.x]
     sub eax, (alien_shot_explosion_width - alien_shot_width) / 2
     mov [r9 + entity.dstrect + SDL_Rect.x], eax
+    mov dword [r9 + entity.dstrect + SDL_Rect.y], screen_height - alien_shot_explosion_height
     mov byte [r9 + entity.alive], true
     mov byte [r9 + entity.lifetime], explosion_lifetime
     mov word [r8], alien_shot_spawn_timer_reset_value
