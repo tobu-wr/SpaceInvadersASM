@@ -571,10 +571,9 @@ main:
 ;   CANNON SHOT UPDATE
 ; ---------------------------------------------------------------------
 
-    cmp byte [cannon_shot + entity.alive], false
-    je .update_cannon_shot_end
-
     ; move cannon shot
+    cmp byte [cannon_shot + entity.alive], false
+    je .move_cannon_shot_end
     sub dword [cannon_shot + entity.dstrect + SDL_Rect.y], cannon_shot_speed
     cmp dword [cannon_shot + entity.dstrect + SDL_Rect.y], 0
     jge .move_cannon_shot_end
@@ -584,53 +583,7 @@ main:
     mov [cannon_shot_explosion + entity.dstrect + SDL_Rect.x], eax
     mov byte [cannon_shot_explosion + entity.alive], true
     mov byte [cannon_shot_explosion + entity.lifetime], explosion_lifetime
-    jmp .update_cannon_shot_end
 .move_cannon_shot_end:
-
-    ; handle cannon shot collision with shelters
-    check_cannon_shot_collision shelters, shelters_end
-    cmp rax, shelters_end
-    jne .update_cannon_shot_end
-
-    ; handle cannon shot collision with aliens
-    check_cannon_shot_collision aliens, aliens_end
-    cmp rax, aliens_end
-    je .handle_cannon_shot_collision_aliens_end
-    dec byte [aliens_alive_count]
-    mov byte [rax + entity.alive], false
-    mov ecx, [rax + entity.dstrect + SDL_Rect.w]
-    sub ecx, alien_explosion_width
-    sar ecx, 1
-    add ecx, [rax + entity.dstrect + SDL_Rect.x]
-    mov [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov ecx, [rax + entity.dstrect + SDL_Rect.h]
-    sub ecx, alien_explosion_height
-    sar ecx, 1
-    add ecx, [rax + entity.dstrect + SDL_Rect.y]
-    mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
-    mov byte [alien_explosion + entity.alive], true
-    mov byte [alien_explosion + entity.lifetime], explosion_lifetime
-    play_sound alien_explosion_sound, singleshot
-    jmp .update_cannon_shot_end
-.handle_cannon_shot_collision_aliens_end:
-
-    ; handle cannon shot collision with saucer
-    check_cannon_shot_collision saucer, saucer + entity_size
-    cmp rax, saucer + entity_size
-    je .handle_cannon_shot_collision_saucer_end
-    mov byte [saucer + entity.alive], false
-    stop_sound saucer_sound_channel
-    mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
-    mov ecx, saucer_width / 2
-    sub ecx, saucer_explosion_width / 2
-    add ecx, [saucer + entity.dstrect + SDL_Rect.x]
-    mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
-    mov byte [saucer_explosion + entity.alive], true
-    mov byte [saucer_explosion + entity.lifetime], explosion_lifetime
-    play_sound saucer_explosion_sound, singleshot
-.handle_cannon_shot_collision_saucer_end:
-
-.update_cannon_shot_end:
 
 ; ---------------------------------------------------------------------
 ;   ALIEN SHOT 1 UPDATE
@@ -726,17 +679,57 @@ main:
 ;   CHECK COLLISIONS
 ; ---------------------------------------------------------------------
 
+    cmp byte [cannon_shot + entity.alive], false
+    je .cannon_shot_collision_end
+
     ; cannon shot <> shelters
-    ; todo
+    check_cannon_shot_collision shelters, shelters_end
+    cmp rax, shelters_end
+    jne .cannon_shot_collision_end
 
     ; cannon shot <> aliens
-    ; todo
+    check_cannon_shot_collision aliens, aliens_end
+    cmp rax, aliens_end
+    je .cannon_shot_collision_aliens_end
+    dec byte [aliens_alive_count]
+    mov byte [rax + entity.alive], false
+    mov ecx, [rax + entity.dstrect + SDL_Rect.w]
+    sub ecx, alien_explosion_width
+    sar ecx, 1
+    add ecx, [rax + entity.dstrect + SDL_Rect.x]
+    mov [alien_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov ecx, [rax + entity.dstrect + SDL_Rect.h]
+    sub ecx, alien_explosion_height
+    sar ecx, 1
+    add ecx, [rax + entity.dstrect + SDL_Rect.y]
+    mov [alien_explosion + entity.dstrect + SDL_Rect.y], ecx
+    mov byte [alien_explosion + entity.alive], true
+    mov byte [alien_explosion + entity.lifetime], explosion_lifetime
+    play_sound alien_explosion_sound, singleshot
+    jmp .cannon_shot_collision_end
+.cannon_shot_collision_aliens_end:
 
     ; cannon shot <> saucer
-    ; todo
+    check_cannon_shot_collision saucer, saucer + entity_size
+    cmp rax, saucer + entity_size
+    je .cannon_shot_collision_saucer_end
+    mov byte [saucer + entity.alive], false
+    stop_sound saucer_sound_channel
+    mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
+    mov ecx, saucer_width / 2
+    sub ecx, saucer_explosion_width / 2
+    add ecx, [saucer + entity.dstrect + SDL_Rect.x]
+    mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
+    mov byte [saucer_explosion + entity.alive], true
+    mov byte [saucer_explosion + entity.lifetime], explosion_lifetime
+    play_sound saucer_explosion_sound, singleshot
+    jmp .cannon_shot_collision_end
+.cannon_shot_collision_saucer_end:
 
     ; cannon shot <> alien shots
     ; todo
+
+.cannon_shot_collision_end:
 
     ; alien shots <> shelters
     ; todo
