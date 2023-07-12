@@ -716,9 +716,8 @@ main:
     mov byte [saucer + entity.alive], false
     stop_sound saucer_sound_channel
     mov word [saucer_spawn_timer], saucer_spawn_timer_reset_value
-    mov ecx, saucer_width / 2
-    sub ecx, saucer_explosion_width / 2
-    add ecx, [saucer + entity.dstrect + SDL_Rect.x]
+    mov ecx, [saucer + entity.dstrect + SDL_Rect.x]
+    sub ecx, (saucer_explosion_width - saucer_width) / 2
     mov [saucer_explosion + entity.dstrect + SDL_Rect.x], ecx
     mov byte [saucer_explosion + entity.alive], true
     mov byte [saucer_explosion + entity.lifetime], explosion_lifetime
